@@ -14,7 +14,7 @@
  * @property {boolean} poisoned      -
  * @property {boolean} poisonous     -
  * @property {boolean} charging      -
- * @property {boolean} invis         -
+ * @property {boolean} invis         - The character is invisible
  * @property {boolean} invincible    -
  * @property {boolean} mute          -
  */
@@ -22,26 +22,27 @@
 /**
  * @typedef {Object} Consumables
  * @property {string} name              - Item name
- * @property {number} q                 - quantity
+ * @property {number} q                 - quantity: how many items are on this stack.
  */
 
 /**
  * @typedef {Object} Gear
  * @property {string} name              - Item name
  * @property {number} level             - level of item
- * @property {string} [stat_type]       - stat type
+ * @property {string} [CharacterStats]  - either dexterity, intelligence, vitality, strength.
  */
 
 /**
- * @typedef {Object} CharacterStats //TODO: describe how character stats effect affect the character
- * @property {number}  dex
- * @property {number}  int
- * @property {number}  vit
- * @property {number}  str
+ * @typedef {Object} CharacterStats
+ * @property {number}  dex  - Dexterity: Increases the attack speed.
+ * @property {number}  int  - Intelligence: Increases maximum mana, also increases resistance by a factor of 1.5 for every int point.
+ * @property {number}  vit  - Vitality: Increases Health points proportional to level.
+ * @property {number}  str  - Strength: Increases Health points and Armor.
  */
 
 /**
  * @typedef {Object} CharacterSlots
+ * @desc The name of the character slots, they may or may not contain Gear
  * @property {Gear} ring1
  * @property {Gear} ring2
  * @property {Gear} earring1
@@ -87,7 +88,8 @@
 /**
  * @class Character
  * @extends PIXI.Sprite
- * @description Characters extend the Entity Object, so every attribute from Entity is available. Some of the Character attributes are only accessible when you are controlling the character.
+ * @description The character is the entity that you are controlling. You can move him around with move(x,y) and order him to attack a monster or a player with attack(target)
+ *
  * @property {number}  hp                - health points
  * @property {number}  max_hp            - maximum health points
  * @property {number}  mp                - mana points
@@ -133,7 +135,7 @@
  * @property {number}  targets           - How many Entities are targeting this character
  * @property {string}  ipass             - Authentication token from game server (keep this secret)
  * @property {Array.<string>}  friends   - List of Player Ids which whom the player is friends with
- * @property {number} direction          - Direction in shich the character is looking (0:down,1:left,2:right;3:up)
+ * @property {number} direction          - Direction in which the character is looking (0:down,1:left,2:right;3:up)
  * @property {Array.<Consumables|Gear|undefined>} items   - Either a Consumable e.g. a potion or a type of Gear. If the slot is empty the
  * @property {CharacterSlots} slots      - Contains all the items that the character is wearing
  * @property {string} skin               - Character skin
@@ -151,10 +153,10 @@
  * @description All Monsters have these properties
  * @property {number}  hp                - health points
  * @property {number}  max_hp            - maximum health points
- * @property {number}  xp                - current experience points
+ * @property {number}  xp                - Experience awarded for killing this monster
  * @property {string}  name              - entity name (for monsters it is null)
  * @property {number}  angle             - angle the character is looking at.
- * @property {number} direction          - Direction in shich the character is looking (0:down,1:left,2:right;3:up)
+ * @property {number} direction          - direction in which the character is looking (0:down,1:left,2:right;3:up)
  * @property {number}  real_x            - x position on map
  * @property {number}  real_y            - y position on map
  * @property {string}  id                - the Monster id, All Monsters in entities are listed by there id.
@@ -163,12 +165,13 @@
  * @property {number|undefined}  from_y  - the last movement starting y position of the character
  * @property {number|undefined}  going_x - the last target x position of the character
  * @property {number|undefined}  going_y - the last target y position of the character
- * @property {boolean} dead              - Is the monster dead
- * @property {Date} died                 - When did the Monster die
- * @property {number} attack             - The Average attack damage the monster does
- * @property {number} speed              - The Normal walking speed of the monster. After aggroing
- * @property {ChannelingConditions} c    - Channelling conditions
- * @property {StatusConditions} s        - Status conditions
+ * @property {boolean} dead              - is the monster dead
+ * @property {Date} died                 - when did the Monster die
+ * @property {number} attack             - the Average attack damage the monster does
+ * @property {number} speed              - the Normal walking speed of the monster. After aggroing
+ * @property {string} type               - the type of the Entity, for monsters this is always "monster"
+ * @property {ChannelingConditions} c    - channelling conditions
+ * @property {StatusConditions} s        - status conditions
  *
  */
 
@@ -203,40 +206,41 @@
  * @property {number|undefined} code     - the code id the player is running (0 or undefined means he isn't running code)
  * @property {string}  target            - EntityId
  * @property {string}  ctype             - In what class is the play e.g. "mage"
- * @property {string} skin               - Character skin
+ * @property {string}  skin              - Character skin
  * @property {number}  frequency         - frequency in which the character attacks. A frequency of 1 means every second where as 0.5 means every 2 seconds.
  * @property {number}  speed             - walking speed
  * @property {string}  id                - player name
  * @property {string}  in                - On which map the player is
  * @property {CharacterSlots} slots      - Contains all the items that the character is wearing
- * @property {number} direction          - Direction in shich the character is looking (0:down,1:left,2:right;3:up)
+ * @property {number} direction          - Direction in which the character is looking (0:down,1:left,2:right;3:up)
  */
 
 /**
  * @typedef {Object} ItemStats
+ * @description Every item may or may not contain any number or combination of these attributes. It is probably a good idea to check if they exist first.
  * @property {number} apiercing
- * @property {number} armor
+ * @property {number} armor - Reduces the incoming physical damage by 1% for every 10 armor points.
  * @property {number} attack
  * @property {number} attr0
  * @property {number} attr1
- * @property {number} crit
- * @property {number} dex
+ * @property {number} crit       - Chance to crit and do double damage
  * @property {number} dreturn
- * @property {number} evasion
+ * @property {number} evasion    - Chance to evade the attack and negate all damage
  * @property {number} gold
  * @property {number} hp
- * @property {number} int
- * @property {number} level
+ * @property {number} level      - The item level
  * @property {number} lifesteal
  * @property {number} mp
  * @property {number} range
  * @property {number} reflection
- * @property {number} resistance
+ * @property {number} resistance - Reduces the incoming magical damage by 1% for every 10 resistance points.
  * @property {number} rpiercing
- * @property {number} speed
- * @property {number} stat
- * @property {number} str
- * @property {number} vit
+ * @property {number} speed      - Adds the the character speed, 1 point equals one additional pixel walked per second.
+ * @property {number} stat       - Can be converted to dex, int, str or vit with the corresponding scrolls
+ * @property {number} dex        - Dexterity: Increases the attack speed.
+ * @property {number} int        - Intelligence: Increases maximum mana, also increases resistance by a factor of 1.5 for every int point.
+ * @property {number} vit        - Vitality: Increases Health points proportional to level.
+ * @property {number} str        - Strength: Increases Health points and Armor.
  */
 
 /**

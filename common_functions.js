@@ -1,32 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8">
-    <title>JSDoc: Source: common_functions.js</title>
-
-    <script src="scripts/prettify/prettify.js"> </script>
-    <script src="scripts/prettify/lang-css.js"> </script>
-    <!--[if lt IE 9]>
-      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
-    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
-    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
-</head>
-
-<body>
-
-<div id="main">
-
-    <h1 class="page-title">Source: common_functions.js</h1>
-
-    
-
-
-
-    
-    <section>
-        <article>
-            <pre class="prettyprint source linenums"><code>var c_version = 2;
+var c_version = 2;
 var EPS = 1e-16;
 var CINF = 999999999999999;
 var colors = {
@@ -60,7 +32,7 @@ var trade_slots = [],
     check_slots = [
         'elixir'
     ];
-for (var i = 1; i &lt;= 16; i++) {
+for (var i = 1; i <= 16; i++) {
     trade_slots.push('trade' + i),
         check_slots.push('trade' + i)
 }
@@ -181,13 +153,13 @@ function within_xy_range(c, b) {
         e = c.real_x,
             d = c.real_y
     }
-    if (e - c.vision[0] &lt; a &amp;&amp; a &lt; e + c.vision[0] &amp;&amp; d - c.vision[1] &lt; f &amp;&amp; f &lt; d + c.vision[1]) {
+    if (e - c.vision[0] < a && a < e + c.vision[0] && d - c.vision[1] < f && f < d + c.vision[1]) {
         return true
     }
     return false
 }
 function distance(l, j) {
-    if ('width' in l &amp;&amp; 'width' in j) {
+    if ('width' in l && 'width' in j) {
         var f = 99999999,
             n = l.width,
             e = l.height,
@@ -251,7 +223,7 @@ function distance(l, j) {
                 }
             ].forEach(function (b) {
                 g = simple_distance(a, b);
-                if (g &lt; f) {
+                if (g < f) {
                     f = g
                 }
             })
@@ -264,16 +236,16 @@ function can_transport(a) {
     return can_walk(a)
 }
 function can_walk(a) {
-    if (is_game &amp;&amp; a.me &amp;&amp; transporting &amp;&amp; ssince(transporting) &lt; 8 &amp;&amp; !a.c.town) {
+    if (is_game && a.me && transporting && ssince(transporting) < 8 && !a.c.town) {
         return false
     }
-    if (is_code &amp;&amp; a.me &amp;&amp; parent.transporting &amp;&amp; ssince(parent.transporting) &lt; 8 &amp;&amp; !a.c.town) {
+    if (is_code && a.me && parent.transporting && ssince(parent.transporting) < 8 && !a.c.town) {
         return false
     }
     return !is_disabled(a)
 }
 function is_disabled(a) {
-    if (!a || a.rip || (a.s &amp;&amp; a.s.stunned)) {
+    if (!a || a.rip || (a.s && a.s.stunned)) {
         return true
     }
 }
@@ -281,11 +253,11 @@ function calculate_item_grade(b, a) {
     if (!(b.upgrade || b.compound)) {
         return 0
     }
-    if ((a &amp;&amp; a.level || 0) >= (b.grades || [11,
+    if ((a && a.level || 0) >= (b.grades || [11,
             12]) [1]) {
         return 2
     }
-    if ((a &amp;&amp; a.level || 0) >= (b.grades || [11,
+    if ((a && a.level || 0) >= (b.grades || [11,
             12]) [0]) {
         return 1
     }
@@ -299,12 +271,12 @@ function calculate_item_value(a) {
         return 1
     }
     var c = G.items[a.name],
-        b = c.cash &amp;&amp; c.g || c.g * 0.6,
+        b = c.cash && c.g || c.g * 0.6,
         d = 1;
-    if (c.compound &amp;&amp; a.level) {
+    if (c.compound && a.level) {
         b *= Math.pow(3.2, a.level)
     }
-    if (c.upgrade &amp;&amp; a.level &amp;&amp; a.level >= 4) {
+    if (c.upgrade && a.level && a.level >= 4) {
         b *= Math.pow(2, a.level - 4)
     }
     if (a.expires) {
@@ -349,7 +321,7 @@ function calculate_item_properties(e, d) {
         var c = e.upgrade || e.compound;
         level = d.level || 0;
         g.level = level;
-        for (var b = 1; b &lt;= level; b++) {
+        for (var b = 1; b <= level; b++) {
             var f = 1;
             if (e.upgrade) {
                 if (b == 7) {
@@ -386,7 +358,7 @@ function calculate_item_properties(e, d) {
                 } else {
                     g[p] += c[p] * f
                 }
-                if (p == 'stat' &amp;&amp; b >= 7) {
+                if (p == 'stat' && b >= 7) {
                     g.stat++
                 }
             }
@@ -408,7 +380,7 @@ function calculate_item_properties(e, d) {
             g[p] = round(g[p])
         }
     }
-    if (e.stat &amp;&amp; d.stat_type) {
+    if (e.stat && d.stat_type) {
         g[d.stat_type] += g.stat * {
                 str: 1,
                 vit: 1,
@@ -436,10 +408,10 @@ function to_pretty_num(a) {
         if (!c) {
             c = '000'
         } else {
-            if (c &lt; 10 &amp;&amp; c != a) {
+            if (c < 10 && c != a) {
                 c = '00' + c
             } else {
-                if (c &lt; 100 &amp;&amp; c != a) {
+                if (c < 100 && c != a) {
                     c = '0' + c
                 }
             }
@@ -455,7 +427,7 @@ function to_pretty_num(a) {
 }
 function e_array(a) {
     var c = [];
-    for (var b = 0; b &lt; a; b++) {
+    for (var b = 0; b < a; b++) {
         c.push(null)
     }
     return c
@@ -477,7 +449,7 @@ function simple_distance(a, b) {
         h = a.y,
         g = b.x,
         f = b.y;
-    if (a.map &amp;&amp; b.map &amp;&amp; a.map != b.map) {
+    if (a.map && b.map && a.map != b.map) {
         return 9999999
     }
     if ('real_x' in a) {
@@ -504,7 +476,7 @@ function calculate_vxy(a, c) {
     }
 }
 function recalculate_vxy(a) {
-    if (a.moving &amp;&amp; a.ref_speed != a.speed) {
+    if (a.moving && a.ref_speed != a.speed) {
         if (is_server) {
             a.move_num++
         }
@@ -513,22 +485,22 @@ function recalculate_vxy(a) {
 }
 function is_in_front(b, a) {
     var c = Math.atan2(gy(a) - gy(b), gx(a) - gx(b)) * 180 / Math.PI;
-    if (b.angle !== undefined &amp;&amp; Math.abs(b.angle - c) &lt;= 45) {
+    if (b.angle !== undefined && Math.abs(b.angle - c) <= 45) {
         return true
     }
     return false
 }
 function calculate_move_original(f, c, j, a, h) {
     var e,
-        g = j &lt; h,
-        b = c &lt; a;
-    for (var d = 0; d &lt; (f.x_lines || []).length; d++) {
+        g = j < h,
+        b = c < a;
+    for (var d = 0; d < (f.x_lines || []).length; d++) {
         var k = f.x_lines[d];
-        if (!(c &lt;= k[0] &amp;&amp; k[0] &lt;= a || a &lt;= k[0] &amp;&amp; k[0] &lt;= c)) {
+        if (!(c <= k[0] && k[0] <= a || a <= k[0] && k[0] <= c)) {
             continue
         }
         e = j + (h - j) * (k[0] - c) / (a - c + EPS);
-        if (!(k[1] &lt;= e &amp;&amp; e &lt;= k[2])) {
+        if (!(k[1] <= e && e <= k[2])) {
             continue
         }
         if (g) {
@@ -542,13 +514,13 @@ function calculate_move_original(f, c, j, a, h) {
             a = max(a, k[0] + 3)
         }
     }
-    for (var d = 0; d &lt; (f.y_lines || []).length; d++) {
+    for (var d = 0; d < (f.y_lines || []).length; d++) {
         var k = f.y_lines[d];
-        if (!(j &lt;= k[0] &amp;&amp; k[0] &lt;= h || h &lt;= k[0] &amp;&amp; k[0] &lt;= j)) {
+        if (!(j <= k[0] && k[0] <= h || h <= k[0] && k[0] <= j)) {
             continue
         }
         e = c + (a - c) * (k[0] - j) / (h - j + EPS);
-        if (!(k[1] &lt;= e &amp;&amp; e &lt;= k[2])) {
+        if (!(k[1] <= e && e <= k[2])) {
             continue
         }
         if (b) {
@@ -562,13 +534,13 @@ function calculate_move_original(f, c, j, a, h) {
             h = max(h, k[0] + 7)
         }
     }
-    for (var d = 0; d &lt; (f.x_lines || []).length; d++) {
+    for (var d = 0; d < (f.x_lines || []).length; d++) {
         var k = f.x_lines[d];
-        if (!(c &lt;= k[0] &amp;&amp; k[0] &lt;= a || a &lt;= k[0] &amp;&amp; k[0] &lt;= c)) {
+        if (!(c <= k[0] && k[0] <= a || a <= k[0] && k[0] <= c)) {
             continue
         }
         e = j + (h - j) * (k[0] - c) / (a - c + EPS);
-        if (!(k[1] &lt;= e &amp;&amp; e &lt;= k[2])) {
+        if (!(k[1] <= e && e <= k[2])) {
             continue
         }
         if (g) {
@@ -594,8 +566,8 @@ function calculate_movex(x, j, h, e, d) {
     if (d == Infinity) {
         d = CINF
     }
-    var r = h &lt; d;
-    var y = j &lt; e;
+    var r = h < d;
+    var y = j < e;
     var k = x.x_lines || [];
     var u = x.y_lines || [];
     var q = min(j, e);
@@ -606,14 +578,14 @@ function calculate_movex(x, j, h, e, d) {
     var m = d - h;
     var f = m / (n + EPS);
     var s = 1 / f;
-    for (var t = 0; t &lt; k.length; t++) {
+    for (var t = 0; t < k.length; t++) {
         var l = k[t];
         var b = l[0];
-        if (w &lt; b || q > b || v &lt; l[1] || o > l[2]) {
+        if (w < b || q > b || v < l[1] || o > l[2]) {
             continue
         }
         var g = h + (b - j) * f;
-        if (g &lt; l[1] || g > l[2]) {
+        if (g < l[1] || g > l[2]) {
             continue
         }
         if (r) {
@@ -631,14 +603,14 @@ function calculate_movex(x, j, h, e, d) {
             q = e
         }
     }
-    for (var t = 0; t &lt; u.length; t++) {
+    for (var t = 0; t < u.length; t++) {
         var l = u[t];
         var a = l[0];
-        if (v &lt; a || o > a || w &lt; l[1] || q > l[2]) {
+        if (v < a || o > a || w < l[1] || q > l[2]) {
             continue
         }
         var c = j + (a - h) * s;
-        if (c &lt; l[1] || c > l[2]) {
+        if (c < l[1] || c > l[2]) {
             continue
         }
         if (y) {
@@ -663,7 +635,7 @@ function calculate_movex(x, j, h, e, d) {
 }
 function calculate_movev1(e, g, f, d, c) {
     var b = calculate_movex(e, g, f, d, c);
-    if (b.x != d &amp;&amp; b.y != c) {
+    if (b.x != d && b.y != c) {
         var a = calculate_movex(e, b.x, b.y, d, b.y);
         if (a.x == b.x) {
             var a = calculate_movex(e, a.x, a.y, a.x, c)
@@ -680,7 +652,7 @@ function calculate_move(e, g, f, d, c) {
         c = CINF
     }
     var b = calculate_movex(e, g, f, d, c);
-    if (b.x != d &amp;&amp; b.y != c) {
+    if (b.x != d && b.y != c) {
         var a = calculate_movex(e, g, f, d, b.y);
         if (a.x == b.x) {
             var a = calculate_movex(e, g, f, a.x, c)
@@ -715,27 +687,27 @@ function can_move(f) {
         }, {
             x: endX,
             y: endY
-        }) &lt; 10) {
+        }) < 10) {
         return true
     }
-    for (var c = 0; c &lt; (data.x_lines || []).length; c++) {
+    for (var c = 0; c < (data.x_lines || []).length; c++) {
         var xline = data.x_lines[c];
-        if (!(starX &lt;= xline[0] &amp;&amp; xline[0] &lt;= endX || endX &lt;= xline[0] &amp;&amp; xline[0] &lt;= starX)) {
+        if (!(starX <= xline[0] && xline[0] <= endX || endX <= xline[0] && xline[0] <= starX)) {
             continue
         }
         d = startY + (endY - startY) * (xline[0] - starX) / (endX - starX + EPS);
-        if (!(xline[1] &lt;= d &amp;&amp; d &lt;= xline[2])) {
+        if (!(xline[1] <= d && d <= xline[2])) {
             continue
         }
         return false
     }
-    for (var c = 0; c &lt; (data.y_lines || []).length; c++) {
+    for (var c = 0; c < (data.y_lines || []).length; c++) {
         var yline = data.y_lines[c];
-        if (!(startY &lt;= yline[0] &amp;&amp; yline[0] &lt;= endY || endY &lt;= yline[0] &amp;&amp; yline[0] &lt;= startY)) {
+        if (!(startY <= yline[0] && yline[0] <= endY || endY <= yline[0] && yline[0] <= startY)) {
             continue
         }
         d = starX + (endX - starX) * (yline[0] - startY) / (endY - startY + EPES);
-        if (!(yline[1] &lt;= d &amp;&amp; d &lt;= yline[2])) {
+        if (!(yline[1] <= d && d <= yline[2])) {
             continue
         }
         return false
@@ -752,7 +724,7 @@ function stop_logic(b) {
         a = b.real_x,
             c = b.real_y
     }
-    if (((b.from_x &lt;= b.going_x &amp;&amp; a >= b.going_x - 0.1) || (b.from_x >= b.going_x &amp;&amp; a &lt;= b.going_x + 0.1)) &amp;&amp; ((b.from_y &lt;= b.going_y &amp;&amp; c >= b.going_y - 0.1) || (b.from_y >= b.going_y &amp;&amp; c &lt;= b.going_y + 0.1))) {
+    if (((b.from_x <= b.going_x && a >= b.going_x - 0.1) || (b.from_x >= b.going_x && a <= b.going_x + 0.1)) && ((b.from_y <= b.going_y && c >= b.going_y - 0.1) || (b.from_y >= b.going_y && c <= b.going_y + 0.1))) {
         if ('real_x' in b) {
             b.real_x = b.going_x,
                 b.real_y = b.going_y
@@ -777,7 +749,7 @@ function trigger(a) {
 function to_number(a) {
     try {
         a = round(parseInt(a));
-        if (a &lt; 0) {
+        if (a < 0) {
             return 0
         }
         if (!a) {
@@ -807,14 +779,14 @@ function is_array(b) {
 function is_function(b) {
     try {
         var a = {};
-        return b &amp;&amp; a.toString.call(b) === '[object Function]'
+        return b && a.toString.call(b) === '[object Function]'
     } catch (c) {
     }
     return false
 }
 function is_object(b) {
     try {
-        return b !== null &amp;&amp; typeof b === 'object'
+        return b !== null && typeof b === 'object'
     } catch (a) {
     }
     return false
@@ -823,13 +795,13 @@ function clone(d, b) {
     if (!b) {
         b = {}
     }
-    if (!b.seen &amp;&amp; b.seen !== []) {
+    if (!b.seen && b.seen !== []) {
         b.seen = []
     }
     if (null == d) {
         return d
     }
-    if (b.simple_functions &amp;&amp; is_function(d)) {
+    if (b.simple_functions && is_function(d)) {
         return '[clone]:' + d.toString().substring(0, 40)
     }
     if ('object' != typeof d) {
@@ -843,7 +815,7 @@ function clone(d, b) {
     if (d instanceof Array) {
         b.seen.push(d);
         var e = [];
-        for (var c = 0; c &lt; d.length; c++) {
+        for (var c = 0; c < d.length; c++) {
             e[c] = clone(d[c], b)
         }
         return e
@@ -868,7 +840,7 @@ function safe_stringify(d, b) {
     var a = [];
     try {
         return JSON.stringify(d, function (e, f) {
-            if (f != null &amp;&amp; typeof f == 'object') {
+            if (f != null && typeof f == 'object') {
                 if (a.indexOf(f) >= 0) {
                     return
                 }
@@ -884,7 +856,7 @@ function smart_eval(code, args) {
     if (!code) {
         return
     }
-    if (args &amp;&amp; !is_array(args)) {
+    if (args && !is_array(args)) {
         args = [
             args
         ]
@@ -903,9 +875,9 @@ function smart_eval(code, args) {
 }
 function is_substr(d, c) {
     if (is_array(c)) {
-        for (var f = 0; f &lt; c.length; f++) {
+        for (var f = 0; f < c.length; f++) {
             try {
-                if (d &amp;&amp; d.toLowerCase().indexOf(c[f].toLowerCase()) != -1) {
+                if (d && d.toLowerCase().indexOf(c[f].toLowerCase()) != -1) {
                     return true
                 }
             } catch (g) {
@@ -913,7 +885,7 @@ function is_substr(d, c) {
         }
     } else {
         try {
-            if (d &amp;&amp; d.toLowerCase().indexOf(c.toLowerCase()) != -1) {
+            if (d && d.toLowerCase().indexOf(c.toLowerCase()) != -1) {
                 return true
             }
         } catch (g) {
@@ -943,7 +915,7 @@ function array_delete(c, a) {
 }
 function in_arr(b, d) {
     if (is_array(b)) {
-        for (var a = 0; a &lt; b.length; a++) {
+        for (var a = 0; a < b.length; a++) {
             for (var c in d) {
                 if (b[a] == d[c]) {
                     return true
@@ -1007,7 +979,7 @@ function randomStr(a) {
     var e = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz',
         c = 'ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz';
     var f = '';
-    for (var d = 0; d &lt; a; d++) {
+    for (var d = 0; d < a; d++) {
         if (d == 0) {
             var b = Math.floor(Math.random() * c.length);
             f += c.substring(b, b + 1)
@@ -1020,24 +992,24 @@ function randomStr(a) {
 }
 String.prototype.replace_all = function (c, a) {
     var b = this;
-    return b.replace(new RegExp(c.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&amp;'), 'g'), a)
+    return b.replace(new RegExp(c.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g'), a)
 };
 function html_escape(a) {
     var d = a;
     var b = [
-        [/&amp;/g,
-            '&amp;amp;'],
+        [/&/g,
+            '&amp;'],
         [
-            /&lt;/g,
-            '&amp;lt;'
+            /</g,
+            '&lt;'
         ],
         [
             />/g,
-            '&amp;gt;'
+            '&gt;'
         ],
         [
             /"/g,
-            '&amp;quot;'
+            '&quot;'
         ]
     ];
     for (var c in b) {
@@ -1083,7 +1055,7 @@ function randomStr(a) {
     var e = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz',
         c = 'ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz';
     var f = '';
-    for (var d = 0; d &lt; a; d++) {
+    for (var d = 0; d < a; d++) {
         if (d == 0) {
             var b = Math.floor(Math.random() * c.length);
             f += c.substring(b, b + 1)
@@ -1111,7 +1083,7 @@ function rough_size(d) {
                 if (typeof f === 'number') {
                     b += 8
                 } else {
-                    if (typeof f === 'object' &amp;&amp; c.indexOf(f) === -1) {
+                    if (typeof f === 'object' && c.indexOf(f) === -1) {
                         c.push(f);
                         for (var e in f) {
                             a.push(f[e])
@@ -1123,26 +1095,3 @@ function rough_size(d) {
     }
     return b
 };
-</code></pre>
-        </article>
-    </section>
-
-
-
-
-</div>
-
-<nav>
-    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Character.html">Character</a></li><li><a href="Monster.html">Monster</a></li><li><a href="PIXI.Sprite.html">Sprite</a></li><li><a href="Player.html">Player</a></li></ul><h3>Global</h3><ul><li><a href="global.html#accept_party_invite">accept_party_invite</a></li><li><a href="global.html#accept_party_request">accept_party_request</a></li><li><a href="global.html#activate">activate</a></li><li><a href="global.html#attack">attack</a></li><li><a href="global.html#bfs">bfs</a></li><li><a href="global.html#buy">buy</a></li><li><a href="global.html#can_attack">can_attack</a></li><li><a href="global.html#can_heal">can_heal</a></li><li><a href="global.html#can_move_to">can_move_to</a></li><li><a href="global.html#can_use">can_use</a></li><li><a href="global.html#change_target">change_target</a></li><li><a href="global.html#clear_drawings">clear_drawings</a></li><li><a href="global.html#compound">compound</a></li><li><a href="global.html#continue_pathfinding">continue_pathfinding</a></li><li><a href="global.html#destroy_item">destroy_item</a></li><li><a href="global.html#draw_circle">draw_circle</a></li><li><a href="global.html#draw_line">draw_line</a></li><li><a href="global.html#equip">equip</a></li><li><a href="global.html#game_log">game_log</a></li><li><a href="global.html#get_map">get_map</a></li><li><a href="global.html#get_nearest_hostile">get_nearest_hostile</a></li><li><a href="global.html#get_nearest_monster">get_nearest_monster</a></li><li><a href="global.html#get_player">get_player</a></li><li><a href="global.html#get_socket">get_socket</a></li><li><a href="global.html#get_target">get_target</a></li><li><a href="global.html#get_target_of">get_target_of</a></li><li><a href="global.html#get_targeted_monster">get_targeted_monster</a></li><li><a href="global.html#handle_command">handle_command</a></li><li><a href="global.html#handle_death">handle_death</a></li><li><a href="global.html#heal">heal</a></li><li><a href="global.html#in_attack_range">in_attack_range</a></li><li><a href="global.html#is_moving">is_moving</a></li><li><a href="global.html#is_transporting">is_transporting</a></li><li><a href="global.html#item_grade">item_grade</a></li><li><a href="global.html#item_properties">item_properties</a></li><li><a href="global.html#item_value">item_value</a></li><li><a href="global.html#load_code">load_code</a></li><li><a href="global.html#loot">loot</a></li><li><a href="global.html#move">move</a></li><li><a href="global.html#mssince">mssince</a></li><li><a href="global.html#on_cm">on_cm</a></li><li><a href="global.html#on_combined_damage">on_combined_damage</a></li><li><a href="global.html#on_destroy">on_destroy</a></li><li><a href="global.html#on_disappear">on_disappear</a></li><li><a href="global.html#on_draw">on_draw</a></li><li><a href="global.html#on_party_invite">on_party_invite</a></li><li><a href="global.html#on_party_request">on_party_request</a></li><li><a href="global.html#respawn">respawn</a></li><li><a href="global.html#say">say</a></li><li><a href="global.html#sell">sell</a></li><li><a href="global.html#send_cm">send_cm</a></li><li><a href="global.html#send_gold">send_gold</a></li><li><a href="global.html#send_item">send_item</a></li><li><a href="global.html#send_party_invite">send_party_invite</a></li><li><a href="global.html#send_party_request">send_party_request</a></li><li><a href="global.html#set_message">set_message</a></li><li><a href="global.html#shift">shift</a></li><li><a href="global.html#show_json">show_json</a></li><li><a href="global.html#smart_move">smart_move</a></li><li><a href="global.html#smart_move_logic">smart_move_logic</a></li><li><a href="global.html#smooth_path">smooth_path</a></li><li><a href="global.html#start_pathfinding">start_pathfinding</a></li><li><a href="global.html#stop">stop</a></li><li><a href="global.html#trade">trade</a></li><li><a href="global.html#trade_buy">trade_buy</a></li><li><a href="global.html#u_item">u_item</a></li><li><a href="global.html#upgrade">upgrade</a></li><li><a href="global.html#use">use</a></li><li><a href="global.html#use_hp_or_mp">use_hp_or_mp</a></li><li><a href="global.html#use_skill">use_skill</a></li></ul>
-</nav>
-
-<br class="clear">
-
-<footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 14 2017 10:01:49 GMT+0200 (CEST)
-</footer>
-
-<script> prettyPrint(); </script>
-<script src="scripts/linenumber.js"> </script>
-</body>
-</html>

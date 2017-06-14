@@ -1,5 +1,8 @@
 .idea/
-/game.js
-/functions.js
-/common_functions.js
-/arena.js
+/scripts/arena.js
+/scripts/fairy.js
+/scripts/jaeger.js
+/scripts/whitelist
+/Bank.js
+/scripts/sort.js
+/scripts/sortorder

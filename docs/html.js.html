@@ -1,0 +1,2468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: html.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: html.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * Created by nexus on 12/06/17.
+ */
+var u_item = null,
+    u_scroll = null,
+    u_offering = null,
+    c_items = e_array(3),
+    c_scroll = null,
+    c_offering = null,
+    c_last = 0,
+    e_item = null,
+    cr_items = e_array(9),
+    cr_last = 0;
+var skillmap = {
+        '1': {
+            name: 'use_hp'
+        },
+        '2': {
+            name: 'use_mp'
+        },
+        R: {
+            name: 'burst'
+        }
+    },
+    skillbar = [
+    ];
+var settings_shown = 0;
+function show_settings() {
+    var a = '&lt;div id=\'pagewrapper\' style=\'z-index:9999; background: rgba(0,0,0,0.6)\' onclick=\'hide_settings()\'>';
+    a += '&lt;div id=\'pagewrapped\'>';
+    a += $('#settingshtml').html();
+    a += '&lt;/div>';
+    a += '&lt;/div>';
+    $('#content').html(a);
+    $('#pagewrapped').css('margin-top', Math.floor(($(window).height() - $('#pagewrapped').height()) / 2) + 'px');
+    resize()
+}
+var docked = [
+    ],
+    cwindows = [
+    ];
+function close_chat_window(a, c) {
+    var b = a + (c || '');
+    $('#chatw' + b).remove();
+    array_delete(docked, b);
+    array_delete(cwindows, b);
+    redock()
+}
+function toggle_chat_window(a, c) {
+    var b = a + (c || '');
+    if (in_arr(b, docked)) {
+        array_delete(docked, b);
+        $('.chatb' + b).html('#');
+        $('#chatw' + b).css('bottom', 'auto');
+        $('#chatw' + b).css('top', 400);
+        $('#chatw' + b).css('left', 400);
+        $('#chatw' + b).css('z-index', 70 + cwindows.length - docked.length);
+        $('#chatw' + b).draggable();
+        $('#chatt' + b).removeClass('newmessage')
+    } else {
+        $('.chatb' + b).html('+');
+        $('#chatw' + b).draggable('destroy');
+        $('#chatw' + b).css('top', 'auto');
+        $('#chatw' + b).css('left', 0);
+        docked.push(b)
+    }
+    redock()
+}
+function chat_title_click(a, c) {
+    var b = a + (c || '');
+    if (in_arr(b, docked)) {
+        toggle_chat_window(a, c)
+    }
+}
+function redock() {
+    for (var a = 0; a &lt; docked.length; a++) {
+        var b = docked[a];
+        $('#chatw' + b).css('bottom', 15 + a * 32);
+        $('#chatw' + b).css('z-index', 70 - a)
+    }
+}
+function open_chat_window(e, h, b) {
+    if (!h) {
+        h = ''
+    }
+    var a = h,
+        g = e + h,
+        d = 70 + cwindows.length - docked.length,
+        f = 'last_say="' + g + '"; if(event.keyCode==13) private_say("' + h + '",$(this).rfval())';
+    if (e == 'party') {
+        a = 'Party',
+            f = 'last_say="' + g + '"; if(event.keyCode==13) party_say($(this).rfval())'
+    }
+    var c = '&lt;div style=\'position:fixed; bottom: 0px; left: 0px; background: black; border: 5px solid gray; z-index: ' + d + '\' id=\'chatw' + g + '\' onclick=\'last_say="' + g + '"\'>';
+    c += '&lt;div style=\'border-bottom: 5px solid gray; text-align: center; font-size: 24px; line-height: 24px; padding: 2px 6px 2px 6px;\'>&lt;span style=\'float:left\' class=\'clickable chatb' + g + '\'\t\t onclick=\'toggle_chat_window("' + e + '","' + h + '")\'>+&lt;/span> &lt;span id=\'chatt' + g + '\' onclick=\'chat_title_click("' + e + '","' + h + '")\'>' + a + '&lt;/span> &lt;span style=\'float: right\' class=\'clickable\' onclick=\'close_chat_window("' + e + '","' + h + '")\'>x&lt;/span>&lt;/div>';
+    c += '&lt;div id=\'chatd' + g + '\' class=\'chatlog\'>&lt;/div>';
+    c += '&lt;div style=\'\'>&lt;input type=\'text\' class=\'chatinput\' id=\'chati' + g + '\' onkeypress=\'' + f + '\'/>&lt;/div>';
+    c += '&lt;/div>';
+    $('body').append(c);
+    docked.push(g);
+    cwindows.push(g);
+    if (b) {
+        toggle_chat_window(e, h)
+    }
+    redock()
+}
+function hide_settings() {
+    $('#content').html('');
+    settings_shown = 0
+}
+function prop_line(e, d, b) {
+    var a = '',
+        c = '';
+    if (!b) {
+        b = {
+        }
+    }
+    if (b.bold) {
+        c = 'font-weight: bold;'
+    }
+    if (is_string(b)) {
+        a = b,
+            b = {
+            }
+    }
+    if (!a) {
+        a = b.color || 'grey'
+    }
+    return '&lt;div>&lt;span style=\'color: ' + a + '; ' + c + '\'>' + e + '&lt;/span>: ' + d + '&lt;/div>'
+}
+function bold_prop_line(c, b, a) {
+    if (!a) {
+        a = {
+        }
+    }
+    if (is_string(a)) {
+        a = {
+            color: a
+        }
+    }
+    if (is_bold) {
+        a.bold = true
+    }
+    return prop_line(c, b, a)
+}
+function render_party(b) {
+    var a = '&lt;div style=\'background-color: black; border: 5px solid gray; padding: 6px; font-size: 24px; display: inline-block\' class=\'enableclicks\'>';
+    if (b) {
+        a += '&lt;div class=\'slimbutton block\'>PARTY&lt;/div>';
+        b.forEach(function (c) {
+            a += '&lt;div class=\'slimbutton block mt5\' style=\'border-color:#703987\' onclick=\'party_click("' + c + '")\'>' + c + '&lt;/div>'
+        });
+        a += '&lt;div class=\'slimbutton block mt5\'';
+        a += 'onclick=\'socket.emit("party",{event:"leave"})\'>LEAVE&lt;/div>'
+    }
+    a += '&lt;/div>';
+    $('#partylist').html(a);
+    if (!b.length) {
+        $('#partylist').hide()
+    } else {
+        $('#partylist').css('display', 'inline-block')
+    }
+}
+function render_character_sheet() {
+    var a = '&lt;div style=\'background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top; text-align: left\' class=\'disableclicks\'>';
+    a += '&lt;div>&lt;span style=\'color:gray\'>Class:&lt;/span> ' + to_title(character.ctype) + '&lt;/div>';
+    a += '&lt;div>&lt;span style=\'color:gray\'>Level:&lt;/span> ' + character.level + '&lt;/div>';
+    a += '&lt;div>&lt;span style=\'color:gray\'>XP:&lt;/span> ' + to_pretty_num(character.xp) + ' / ' + to_pretty_num(character.max_xp) + '&lt;/div>';
+    if (character.ctype == 'priest') {
+        a += '&lt;div>&lt;span style=\'color:gray\'>Heal:&lt;/span> ' + character.attack + '&lt;/div>';
+        a += '&lt;div>&lt;span style=\'color:gray\'>Attack:&lt;/span> ' + round(character.attack * 0.4) + '&lt;/div>'
+    } else {
+        a += '&lt;div>&lt;span style=\'color:gray\'>Attack:&lt;/span> ' + character.attack + '&lt;/div>'
+    }
+    a += '&lt;div>&lt;span style=\'color:gray\'>Attack Speed:&lt;/span> ' + round(character.frequency * 100) + '&lt;/div>';
+    a += '&lt;div>&lt;span style=\'color:gray\'>Strength:&lt;/span> ' + character.stats.str + '&lt;/div>';
+    a += '&lt;div>&lt;span style=\'color:gray\'>Intelligence:&lt;/span> ' + character.stats['int'] + '&lt;/div>';
+    a += '&lt;div>&lt;span style=\'color:gray\'>Dexterity:&lt;/span> ' + character.stats.dex + '&lt;/div>';
+    a += '&lt;div>&lt;span style=\'color:gray\'>Vitality:&lt;/span> ' + character.stats.vit + '&lt;/div>';
+    a += '&lt;div>&lt;span style=\'color:gray\'>Armor:&lt;/span> ' + character.armor + '&lt;/div>';
+    a += '&lt;div>&lt;span style=\'color:gray\'>Resistance:&lt;/span> ' + character.resistance + '&lt;/div>';
+    a += '&lt;div>&lt;span style=\'color:gray\'>Speed:&lt;/span> ' + character.speed + '&lt;/div>';
+    a += '&lt;div>&lt;span style=\'color:gray\'>MP Cost:&lt;/span> ' + character.mp_cost + '&lt;/div>';
+    if (character.goldm != 1) {
+        a += '&lt;div>&lt;span style=\'color:gray\'>Gold:&lt;/span> ' + round(character.goldm * 100) + '%&lt;/div>'
+    }
+    if (character.xpm != 1) {
+        a += '&lt;div>&lt;span style=\'color:gray\'>Experience:&lt;/span> ' + round(character.xpm * 100) + '%&lt;/div>'
+    }
+    if (character.luckm != 1) {
+        a += '&lt;div>&lt;span style=\'color:gray\'>Luck:&lt;/span> ' + round(character.luckm * 100) + '%&lt;/div>'
+    }
+    a += '&lt;/div>';
+    $('#rightcornerui').html(a);
+    topright_npc = 'character'
+}
+function render_abilities() {
+}
+function render_info(h, f) {
+    if (!f) {
+        f = [
+        ]
+    }
+    var e = '&lt;div style=\'background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top\'>';
+    for (var d = 0; d &lt; h.length; d++) {
+        var g = h[d],
+            a = '';
+        var b = g.color || 'white';
+        if (g.afk) {
+            a = ' &lt;span class=\'gray\'>[AFK]&lt;/span>'
+        }
+        if (g.cursed) {
+            a = ' &lt;span style=\'color: #7D4DAA\'>[C]&lt;/span>'
+        }
+        if (g.poisoned) {
+            a = ' &lt;span style=\'color: #45993F\'>[P]&lt;/span>'
+        }
+        if (g.stunned) {
+            a = ' &lt;span style=\'color: #FF9601\'>[STUN]&lt;/span>'
+        }
+        if (g.line) {
+            e += '&lt;span class=\'cbold\' style=\'color: ' + b + '\'>' + g.line + '&lt;/span>' + a + '&lt;br />'
+        } else {
+            e += '&lt;span class=\'cbold\' style=\'color: ' + b + '\'>' + g.name + '&lt;/span>: ' + g.value + a + '&lt;br />'
+        }
+    }
+    for (var d = 0; d &lt; f.length; d++) {
+        var c = f[d];
+        var b = c.color || 'white';
+        e += '&lt;span style=\'color: ' + b + '\' class=\'clickable cbold\' onclick="' + c.onclick + '">' + c.name + '&lt;/span>';
+        if (c.pm_onclick) {
+            e += ' &lt;span style=\'color: ' + ('#276bc5' || b) + '\' class=\'clickable cbold\' onclick="' + c.pm_onclick + '">PM&lt;/span>'
+        }
+        e += '&lt;br />'
+    }
+    e += '&lt;/div>';
+    $('#topleftcornerui').html(e)
+}
+function render_slots(f) {
+    function c(m, g, l) {
+        if (!l) {
+            l = 0.4
+        }
+        if (f.slots[m]) {
+            var j = f.slots[m];
+            var k = 'item' + randomStr(10),
+                h = G.items[j.name],
+                i = j.skin || h.skin;
+            if (j.expires) {
+                i = h.skin_a
+            }
+            e += item_container({
+                skin: i,
+                onclick: 'slot_click(\'' + m + '\')',
+                def: h,
+                id: k,
+                draggable: f.me,
+                sname: f.me &amp;&amp; m,
+                shade: g,
+                s_op: l,
+                slot: m
+            }, j)
+        } else {
+            e += item_container({
+                size: 40,
+                draggable: f.me,
+                shade: g,
+                s_op: l,
+                slot: m
+            })
+        }
+    }
+    var a = f.me;
+    var e = '&lt;div style=\'background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top; margin-left: 5px\'>';
+    if (f.stand) {
+        e += '&lt;div class=\'cmerchant\'>';
+        for (var d = 0; d &lt; 4; d++) {
+            e += '&lt;div>';
+            for (var b = 0; b &lt; 4; b++) {
+                c('trade' + ((d * 4) + b + 1), 'shade_gold', 0.25)
+            }
+            e += '&lt;/div>'
+        }
+        e += '&lt;/div>'
+    }
+    if (f.stand) {
+        e += '&lt;div class=\'cmerchant hidden\'>'
+    }
+    e += '&lt;div>';
+    c('earring1', 'shade_earring');
+    c('helmet', 'shade_helmet', 0.5);
+    c('earring2', 'shade_earring');
+    c('amulet', 'shade_amulet');
+    e += '&lt;/div>';
+    e += '&lt;div>';
+    c('mainhand', 'shade_mainhand', 0.36);
+    c('chest', 'shade_chest');
+    c('offhand', 'shade_offhand');
+    c('cape', 'shade20_cape');
+    e += '&lt;/div>';
+    e += '&lt;div>';
+    c('ring1', 'shade_ring');
+    c('pants', 'shade_pants', 0.5);
+    c('ring2', 'shade_ring');
+    c('orb', 'shade20_orb');
+    e += '&lt;/div>';
+    e += '&lt;div>';
+    c('belt', 'shade_belt');
+    c('shoes', 'shade_shoes', 0.5);
+    c('gloves', 'shade_gloves');
+    c('elixir', 'shade20_elixir');
+    e += '&lt;/div>';
+    if ((f.me &amp;&amp; f.slots.trade1 !== undefined || (f.slots.trade1 || f.slots.trade2 || f.slots.trade3 || f.slots.trade4)) &amp;&amp; !f.stand) {
+        e += '&lt;div>';
+        c('trade1', 'shade_gold', 0.25);
+        c('trade2', 'shade_gold', 0.25);
+        c('trade3', 'shade_gold', 0.25);
+        c('trade4', 'shade_gold', 0.25);
+        e += '&lt;/div>'
+    }
+    if (f.stand) {
+        e += '&lt;/div>'
+    }
+    e += '&lt;/div>';
+    $('#topleftcornerui').append(e)
+}
+function render_transports_npc() {
+    reset_inventory(1);
+    topleft_npc = 'transports';
+    rendered_target = topleft_npc;
+    e_item = null;
+    var a = '&lt;div style=\'background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top;\'>';
+    a += '&lt;div class=\'clickable\' onclick=\'transport_to("main",9)\'>&amp;gt; New Town&lt;/div>';
+    a += '&lt;div class=\'clickable\' onclick=\'transport_to("winterland",1)\'>&amp;gt; Winterland&lt;/div>';
+    a += '&lt;div class=\'clickable\' onclick=\'transport_to("halloween",1)\'>&amp;gt; Spooky Forest&lt;/div>';
+    a += '&lt;div class=\'clickable\' onclick=\'transport_to("underworld")\'>&amp;gt; Underworld&lt;/div>';
+    a += '&lt;div class=\'clickable\' onclick=\'transport_to("desert")\'>&amp;gt; Desertland &lt;span style=\'color: #D2CB7E\'>[Soon!]&lt;/span>&lt;/div>';
+    a += '&lt;/div>';
+    $('#topleftcornerui').html(a)
+}
+function render_gold_npc() {
+    reset_inventory(1);
+    topleft_npc = 'gold';
+    rendered_target = topleft_npc;
+    e_item = null;
+    var a = '&lt;div style=\'background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top; text-align: center\' onclick=\'stpr(event); cfocus(".npcgold")\'>';
+    a += '&lt;div style=\'font-size: 36px; margin-bottom: 10px\'>&lt;span style=\'color:gold\'>GOLD:&lt;/span> ' + (character.user &amp;&amp; to_pretty_num(character.user.gold) || 'Unavailable') + '&lt;/div>';
+    a += '&lt;div style=\'font-size: 36px; margin-bottom: 10px\'>&lt;span style=\'color:gray\'>Amount:&lt;/span> &lt;div contenteditable=\'true\' class=\'npcgold inline-block\'>0&lt;/div>&lt;/div>';
+    a += '&lt;div>&lt;div class=\'gamebutton clickable\' onclick=\'deposit()\'>DEPOSIT&lt;/div>&lt;div class=\'gamebutton clickable ml5\' onclick=\'withdraw()\'>WITHDRAW&lt;/div>&lt;/div>';
+    a += '&lt;/div>';
+    $('#topleftcornerui').html(a);
+    cfocus('.npcgold')
+}
+var last_rendered_items = 'items0';
+function render_items_npc(l) {
+    if (!character.user) {
+        return
+    }
+    if (!l) {
+        l = last_rendered_items
+    }
+    if (l &amp;&amp; !character.user[l]) {
+        render_interaction('unlock_' + l);
+        topleft_npc = 'items';
+        rendered_target = topleft_npc;
+        last_rendered_items = l;
+        return
+    }
+    last_rendered_items = l;
+    reset_inventory(1);
+    topleft_npc = 'items';
+    rendered_target = topleft_npc;
+    var g = [
+        ],
+        m = 0,
+        k = character.user[l] || [];
+    var e = '&lt;div style=\'background-color: black; border: 5px solid gray; padding: 2px; font-size: 24px; display: inline-block\' class=\'dcontain\'>';
+    for (var d = 0; d &lt; Math.ceil(max(character.isize, k.length) / 7); d++) {
+        e += '&lt;div>';
+        for (var c = 0; c &lt; 7; c++) {
+            var h = null;
+            if (m &lt; k.length) {
+                h = k[m++]
+            } else {
+                m++
+            }
+            if (h) {
+                var a = 'citem' + (m - 1),
+                    o = G.items[h.name],
+                    n = o.skin;
+                if (h.expires) {
+                    n = o.skin_a
+                }
+                e += item_container({
+                    skin: n,
+                    def: o,
+                    id: 'str' + a,
+                    draggable: true,
+                    strnum: m - 1,
+                    snum: m - 1
+                }, h);
+                g.push({
+                    id: a,
+                    item: o,
+                    name: h.name,
+                    actual: h,
+                    num: m - 1
+                })
+            } else {
+                e += item_container({
+                    size: 40,
+                    draggable: true,
+                    strnum: m - 1
+                })
+            }
+        }
+        e += '&lt;/div>'
+    }
+    e += '&lt;/div>&lt;div id=\'storage-item\' style=\'display: inline-block; vertical-align: top; margin-left: 5px\'>&lt;/div>';
+    $('#topleftcornerui').html(e);
+    for (var d = 0; d &lt; g.length; d++) {
+        var b = g[d];
+        function f(i) {
+            return function () {
+                render_item('#storage-item', i)
+            }
+        }
+        $('#str' + b.id).on('click', f(b)).addClass('clickable')
+    }
+    if (!inventory) {
+        render_inventory()
+    }
+}
+function render_inventory() {
+    var g = 0,
+        b = 'text-align: right';
+    if (inventory) {
+        $('#bottomleftcorner').html('');
+        inventory = false;
+        return
+    }
+    var e = '&lt;div style=\'background-color: black; border: 5px solid gray; padding: 2px; font-size: 24px; display: inline-block\' class=\'dcontain\'>';
+    if (c_enabled) {
+        e += '&lt;div style=\'padding: 4px; display: inline-block\' class=\'clickable\'>';
+        e += '&lt;a href=\'https://adventure.land/shells\' class=\'cancela\' target=\'_blank\'>&lt;span class=\'cbold\' style=\'color: ' + colors.cash + '\'>SHELLS&lt;/span>: &lt;span class=\'cashnum\'>' + to_pretty_num(character.cash || 0) + '&lt;/span>&lt;/a>&lt;/div>';
+        b = ' display: inline-block; float: right'
+    }
+    e += '&lt;div style=\'padding: 4px;' + b + '\'>&lt;span class=\'cbold\' style=\'color: gold\'>GOLD&lt;/span>: &lt;span class=\'goldnum\'>' + to_pretty_num(character.gold) + '&lt;/span>&lt;/div>';
+    e += '&lt;div style=\'border-bottom: 5px solid gray; margin-bottom: 2px; margin-left: -5px; margin-right: -5px\'>&lt;/div>';
+    for (var d = 0; d &lt; Math.ceil(max(character.isize, character.items.length) / 7); d++) {
+        e += '&lt;div>';
+        for (var c = 0; c &lt; 7; c++) {
+            var f = null;
+            if (g &lt; character.items.length) {
+                f = character.items[g++]
+            } else {
+                g++
+            }
+            if (f) {
+                var a = 'citem' + (g - 1),
+                    k = G.items[f.name],
+                    h = f.skin || k.skin;
+                if (f.expires) {
+                    h = k.skin_a
+                }
+                e += item_container({
+                    skin: h,
+                    onclick: 'inventory_click(' + (g - 1) + ')',
+                    def: k,
+                    id: a,
+                    draggable: true,
+                    num: g - 1,
+                    cnum: g - 1
+                }, f)
+            } else {
+                e += item_container({
+                    size: 40,
+                    draggable: true,
+                    cnum: g - 1
+                })
+            }
+        }
+        e += '&lt;/div>'
+    }
+    e += '&lt;/div>&lt;div class=\'inventory-item\' style=\'display: inline-block; vertical-align: top; margin-left: 5px\'>&lt;/div>';
+    inventory = true;
+    $('#bottomleftcorner').html(e)
+}
+function render_crafter(d) {
+    var a = 'stick',
+        c = 'CRAFT';
+    reset_inventory(1);
+    topleft_npc = 'crafter';
+    rendered_target = topleft_npc;
+    cr_items = e_array(9),
+        cr_last = 0;
+    var b = '&lt;div style=\'background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top; text-align: center\'>';
+    b += '&lt;div>';
+    b += item_container({
+        shade: a,
+        cid: 'critem0',
+        s_op: 0.3,
+        draggable: false,
+        droppable: true
+    });
+    b += item_container({
+        shade: a,
+        cid: 'critem1',
+        s_op: 0.3,
+        draggable: false,
+        droppable: true
+    });
+    b += item_container({
+        shade: a,
+        cid: 'critem2',
+        s_op: 0.3,
+        draggable: false,
+        droppable: true
+    });
+    b += '&lt;/div>';
+    b += '&lt;div>';
+    b += item_container({
+        shade: a,
+        cid: 'critem3',
+        s_op: 0.3,
+        draggable: false,
+        droppable: true
+    });
+    b += item_container({
+        shade: a,
+        cid: 'critem4',
+        s_op: 0.3,
+        draggable: false,
+        droppable: true
+    });
+    b += item_container({
+        shade: a,
+        cid: 'critem5',
+        s_op: 0.3,
+        draggable: false,
+        droppable: true
+    });
+    b += '&lt;/div>';
+    b += '&lt;div class=\'mb5\'>';
+    b += item_container({
+        shade: a,
+        cid: 'critem6',
+        s_op: 0.3,
+        draggable: false,
+        droppable: true
+    });
+    b += item_container({
+        shade: a,
+        cid: 'critem7',
+        s_op: 0.3,
+        draggable: false,
+        droppable: true
+    });
+    b += item_container({
+        shade: a,
+        cid: 'critem8',
+        s_op: 0.3,
+        draggable: false,
+        droppable: true
+    });
+    b += '&lt;/div>';
+    b += '&lt;div>&lt;div class=\'gamebutton clickable\' onclick=\'draw_trigger(function(){ render_crafter(); reset_inventory(); });\'>RESET&lt;/div> &lt;div class=\'gamebutton clickable\' onclick=\'craft()\'>' + c + '&lt;/div>&lt;/div>';
+    b += '&lt;/div>';
+    $('#topleftcornerui').html(b);
+    if (!inventory) {
+        render_inventory()
+    }
+}
+function render_exchange_shrine(d) {
+    var a = 'shade_exchange',
+        c = 'EXCHANGE';
+    reset_inventory(1);
+    topleft_npc = 'exchange';
+    rendered_target = topleft_npc;
+    exchange_type = d;
+    if (d == 'leather') {
+        a = 'leather',
+            c = 'GIVE'
+    }
+    if (d == 'lostearring') {
+        a = 'lostearring',
+            c = 'PROVIDE'
+    }
+    if (d == 'mistletoe') {
+        a = 'mistletoe',
+            c = 'GIVE IT'
+    }
+    if (d == 'candycane') {
+        a = 'candycane',
+            c = 'FEED'
+    }
+    if (d == 'ornament') {
+        a = 'ornament',
+            c = 'GIVE'
+    }
+    if (d == 'seashell') {
+        a = 'seashell',
+            c = 'GIVE'
+    }
+    if (d == 'gemfragment') {
+        a = 'gemfragment',
+            c = 'PROVIDE'
+    }
+    e_item = null;
+    var b = '&lt;div style=\'background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top; text-align: center\'>';
+    b += '&lt;div class=\'ering ering1 mb10\'>';
+    b += '&lt;div class=\'ering ering2\'>';
+    b += '&lt;div class=\'ering ering3\'>';
+    b += item_container({
+        shade: a,
+        cid: 'eitem',
+        s_op: 0.3,
+        draggable: false,
+        droppable: true
+    });
+    b += '&lt;/div>';
+    b += '&lt;/div>';
+    b += '&lt;/div>';
+    b += '&lt;div>&lt;div class=\'gamebutton clickable\' onclick=\'exchange()\'>' + c + '&lt;/div>&lt;/div>';
+    b += '&lt;/div>';
+    $('#topleftcornerui').html(b);
+    if (!inventory) {
+        render_inventory()
+    }
+}
+function render_upgrade_shrine() {
+    reset_inventory(1);
+    topleft_npc = 'upgrade';
+    rendered_target = topleft_npc;
+    u_item = null,
+        u_scroll = null,
+        u_offering = null;
+    var a = '&lt;div style=\'background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top\'>';
+    a += '&lt;div class=\'mb5\' align=\'center\'>';
+    a += '&lt;div>';
+    a += item_container({
+        draggable: false,
+        droppable: true,
+        shade: 'shade_uweapon',
+        cid: 'uweapon'
+    });
+    a += '&lt;/div>';
+    a += '&lt;div>';
+    a += item_container({
+        draggable: false,
+        droppable: true,
+        shade: 'shade_offering',
+        cid: 'uoffering',
+        s_op: 0.36
+    });
+    a += item_container({
+        draggable: false,
+        droppable: true,
+        shade: 'shade_scroll',
+        cid: 'uscroll'
+    });
+    a += '&lt;/div>';
+    a += '&lt;/div>';
+    a += '&lt;div class=\'gamebutton clickable\' onclick=\'draw_trigger(function(){ render_upgrade_shrine(); reset_inventory(); });\'>RESET&lt;/div>';
+    a += '&lt;div class=\'gamebutton clickable ml5\' onclick=\'upgrade()\'>UPGRADE&lt;/div>';
+    a += '&lt;/div>';
+    $('#topleftcornerui').html(a);
+    if (!inventory) {
+        render_inventory()
+    }
+}
+function render_compound_shrine() {
+    reset_inventory(1);
+    topleft_npc = 'compound';
+    rendered_target = topleft_npc;
+    c_items = e_array(3),
+        c_scroll = null,
+        c_offering = null;
+    c_last = 0;
+    var a = '&lt;div style=\'background-color: black; border: 5px solid gray; padding: 20px; font-size: 24px; display: inline-block; vertical-align: top\'>';
+    a += '&lt;div class=\'mb5\' align=\'center\'>';
+    a += '&lt;div>';
+    a += item_container({
+        draggable: false,
+        droppable: true,
+        shade: 'shade_cring',
+        cid: 'compound0'
+    });
+    a += item_container({
+        draggable: false,
+        droppable: true,
+        shade: 'shade_cring',
+        cid: 'compound1'
+    });
+    a += item_container({
+        draggable: false,
+        droppable: true,
+        shade: 'shade_cring',
+        cid: 'compound2'
+    });
+    a += '&lt;/div>';
+    a += '&lt;div>';
+    a += item_container({
+        draggable: false,
+        droppable: true,
+        shade: 'shade_offering',
+        cid: 'coffering',
+        s_op: 0.36
+    });
+    a += item_container({
+        draggable: false,
+        droppable: true,
+        shade: 'shade_cscroll',
+        cid: 'cscroll'
+    });
+    a += '&lt;/div>';
+    a += '&lt;/div>';
+    a += '&lt;div class=\'gamebutton clickable\' onclick=\'draw_trigger(function(){ render_compound_shrine(); reset_inventory(); });\'>RESET&lt;/div>';
+    a += '&lt;div class=\'gamebutton clickable ml5\' onclick=\'compound()\'>COMBINE&lt;/div>';
+    a += '&lt;/div>';
+    $('#topleftcornerui').html(a);
+    if (!inventory) {
+        render_inventory()
+    }
+}
+function render_merchant(k) {
+    reset_inventory(1);
+    topleft_npc = 'merchant';
+    rendered_target = topleft_npc;
+    merchant_id = k.id;
+    var l = 0,
+        g = [
+        ];
+    var e = '&lt;div style=\'background-color: black; border: 5px solid gray; padding: 2px; font-size: 24px; display: inline-block\'>';
+    for (var d = 0; d &lt; 4; d++) {
+        e += '&lt;div>';
+        for (var c = 0; c &lt; 5; c++) {
+            if (l &lt; k.items.length &amp;&amp; k.items[l++] &amp;&amp; (c_enabled || !G.items[k.items[l - 1]].cash)) {
+                var h = k.items[l - 1];
+                var a = 'item' + randomStr(10),
+                    m = G.items[h];
+                e += item_container({
+                    skin: m.skin_a || m.skin,
+                    def: m,
+                    id: a,
+                    draggable: false,
+                    on_rclick: 'buy(\'' + h + '\')'
+                });
+                g.push({
+                    id: a,
+                    item: m,
+                    name: h,
+                    value: m.g,
+                    cash: m.cash
+                })
+            } else {
+                e += item_container({
+                    size: 40,
+                    draggable: false,
+                    droppable: true
+                })
+            }
+        }
+        e += '&lt;/div>'
+    }
+    e += '&lt;/div>&lt;div id=\'merchant-item\' style=\'display: inline-block; vertical-align: top; margin-left: 5px\'>&lt;/div>';
+    $('#topleftcornerui').html(e);
+    for (var d = 0; d &lt; g.length; d++) {
+        var b = g[d];
+        function f(i) {
+            return function () {
+                render_item('#merchant-item', i)
+            }
+        }
+        $('#' + b.id).on('click', f(b)).addClass('clickable')
+    }
+}
+function render_computer(a) {
+    var b = '';
+    b += '&lt;div style="color: #32A3B0">CONNECTED.&lt;/div>';
+    b += '&lt;div onclick=\'render_upgrade_shrine()\' class=\'clickable\' style=\'color: #E4E4E4\'>&lt;span style=\'color: #BA61A4\'>&amp;gt;&lt;/span> UPGRADE&lt;/div>';
+    b += '&lt;div onclick=\'render_compound_shrine()\' class=\'clickable\' style=\'color: #E4E4E4\'>&lt;span style=\'color: #BA61A4\'>&amp;gt;&lt;/span> COMPOUND&lt;/div>';
+    b += '&lt;div onclick=\'render_exchange_shrine()\' class=\'clickable\' style=\'color: #E4E4E4\'>&lt;span style=\'color: #BA61A4\'>&amp;gt;&lt;/span> EXCHANGE&lt;/div>';
+    b += '&lt;div onclick=\'render_merchant(G.npcs.pots)\' class=\'clickable\' style=\'color: #E4E4E4\'>&lt;span style=\'color: #BA61A4\'>&amp;gt;&lt;/span> POTIONS&lt;/div>';
+    b += '&lt;div onclick=\'render_merchant(G.npcs.scrolls)\' class=\'clickable\' style=\'color: #E4E4E4\'>&lt;span style=\'color: #BA61A4\'>&amp;gt;&lt;/span> SCROLLS&lt;/div>';
+    b += '&lt;div onclick=\'render_merchant(G.npcs.basics)\' class=\'clickable\' style=\'color: #E4E4E4\'>&lt;span style=\'color: #BA61A4\'>&amp;gt;&lt;/span> BASICS&lt;/div>';
+    b += '&lt;div onclick=\'render_merchant(G.npcs.premium)\' class=\'clickable\' style=\'color: #E4E4E4\'>&lt;span style=\'color: #BA61A4\'>&amp;gt;&lt;/span> PREMIUM&lt;/div>';
+    a.html(b)
+}
+function render_code_gallery() {
+    var a = '';
+    G.codes.forEach(function (b) {
+        a += '&lt;div class=\'gamebutton\'>' + (b.name || b.key) + '&lt;/div>'
+    });
+    a += '&lt;div style=\'border: 4px gray solid;\'>';
+    G.codes[0].list.forEach(function (b) {
+        a += '&lt;div onclick=\'api_call("load_gcode",{file:"' + b[0] + '"});\'>' + b[1] + '&lt;/div>'
+    });
+    a += '&lt;/div>';
+    show_modal(a)
+}
+function render_tutorial_stepv1(a) {
+    if (!a) {
+        a = {
+        }
+    }
+    a.title = '[1/24] Move';
+    a.main = 'Welcome to the first step of the tutorial. In this step, we are going to move! Now move your character near the green goo\'s by clicking on the map and walking below the town!';
+    a.code = 'Using the CODE feature. You can use the `move` function, or, the more costly `smart_move` function.';
+    var b = '';
+    if (a.title) {
+        b += '&lt;div style=\'border: 5px solid #65A7E6; background-color: #E6E6E6; color: #333333; margin: 3px; padding: 5px; font-size: 24px; display: inline-block\'>' + a.title + '&lt;/div>'
+    }
+    if (a.main) {
+        b += '&lt;div style=\'border: 5px solid gray; background-color: #E6E6E6; color: #333333; margin: 3px; padding: 5px; font-size: 24px;\'>' + a.main + '&lt;/div>'
+    }
+    if (a.code) {
+        b += '&lt;div style=\'border: 5px solid #E4738A; background-color: #E6E6E6; color: #333333; margin: 3px; padding: 5px; font-size: 24px;\'>' + a.code + '&lt;/div>'
+    }
+    show_modal(b)
+}
+function render_skill(a, e, c) {
+    if (!c) {
+        c = {
+        }
+    }
+    var f = c.actual || {
+            },
+        d = '';
+    var b = G.skills[e];
+    d += '&lt;div style=\'background-color: black; border: 5px solid gray; font-size: 24px; display: inline-block; padding: 20px; line-height: 24px; max-width: 240px; ' + (c.styles || '') + '\'>';
+    if (!b) {
+        d += e
+    } else {
+        d += '&lt;div style=\'color: #4EB7DE; display: inline-block; border-bottom: 2px dashed gray; margin-bottom: 3px\' class=\'cbold\'>' + b.name + '&lt;/div>';
+        if (b.explanation) {
+            d += '&lt;div style=\'color: #C3C3C3\'>' + b.explanation + '&lt;/div>';
+            if (b.duration) {
+                d += bold_prop_line('Duration', (b.duration / 1000) + ' seconds', 'gray')
+            }
+            if (b.cooldown) {
+                d += bold_prop_line('Cooldown', (b.cooldown / 1000) + ' seconds', 'gray')
+            }
+            if (b.mp) {
+                d += bold_prop_line('MP', b.mp, colors.mp)
+            }
+        }
+    }
+    d += '&lt;/div>';
+    $(a).html(d)
+}
+function render_computer_network(a) {
+    var b = '&lt;div style=\'background-color: black; border: 5px solid gray; font-size: 24px; display: inline-block; padding: 20px; line-height: 24px; max-width: 240px;\' class=\'buyitem\'>&lt;div class=\'computernx\'>&lt;/div>&lt;/div>';
+    $(a).html(b);
+    render_computer($('.computernx'))
+}
+function render_item(e, i) {
+    var item = i.item,
+        id = i.name,
+        color = 'gray',
+        value = i.value,
+        j = i.cash,
+        itemName = item.name;
+    var m = i &amp;&amp; i.actual;
+    var properties = calculate_item_properties(item, m || {
+            }),
+        grade = calculate_item_grade(item, m || {
+            });
+    var html = '';
+    html += '&lt;div style=\'background-color: black; border: 5px solid gray; font-size: 24px; display: inline-block; padding: 20px; line-height: 24px; max-width: 240px; ' + (i.styles || '') + '\' class=\'buyitem\'>';
+    if (!item) {
+        html += 'ITEM'
+    } else {
+        color = '#E4E4E4';
+        if (item.grade == 'mid') {
+            color = 'blue'
+        }
+        if (m &amp;&amp; m.p == 'shiny') {
+            itemName = 'Shiny ' + itemName
+        }
+        if (properties.level) {
+            itemName += ' +' + properties.level
+        }
+        if (i.thumbnail) {
+            html += '&lt;div>' + item_container({
+                    skin: item.skin,
+                    def: item
+                }) + '&lt;/div>'
+        }
+        html += '&lt;div style=\'color: ' + color + '; display: inline-block; border-bottom: 2px dashed gray; margin-bottom: 3px\' class=\'cbold\'>' + itemName + '&lt;/div>';
+        (item.gives || []).forEach(function (o) {
+            if (o[0] == 'hp') {
+                html += bold_prop_line('HP', '+' + o[1], colors.hp)
+            }
+            if (o[0] == 'mp') {
+                html += bold_prop_line('MP', '+' + o[1], colors.mp)
+            }
+        });
+        if (properties.gold) {
+            html += bold_prop_line('Gold', '+' + properties.gold + '%', 'gold')
+        }
+        if (properties.luck) {
+            html += bold_prop_line('Luck', '+' + properties.luck + '%', '#5DE376')
+        }
+        if (properties.lifesteal) {
+            html += bold_prop_line('Lifesteal', properties.lifesteal + '%', '#9A1D27')
+        }
+        if (properties.evasion) {
+            html += bold_prop_line('Evasion', properties.evasion + '%', '#7AC0F5')
+        }
+        if (properties.reflection) {
+            html += bold_prop_line('Reflection', properties.reflection + '%', '#B484E5')
+        }
+        if (properties.dreturn) {
+            html += bold_prop_line('D.Return', properties.dreturn + '%', '#E94959')
+        }
+        if (properties.crit) {
+            html += bold_prop_line('Crit', properties.crit + '%', '#E52967')
+        }
+        if (properties.attack) {
+            html += bold_prop_line('Damage', properties.attack, colors.attack)
+        }
+        if (properties.range) {
+            html += bold_prop_line('Range', '+' + properties.range, colors.range)
+        }
+        if (properties.hp) {
+            html += bold_prop_line('HP', properties.hp, colors.hp)
+        }
+        if (properties.str) {
+            html += bold_prop_line('Strength', properties.str, colors.str)
+        }
+        if (properties['int']) {
+            html += bold_prop_line('Intelligence', properties['int'], colors['int'])
+        }
+        if (properties.dex) {
+            html += bold_prop_line('Dexterity', properties.dex, colors.dex)
+        }
+        if (properties.vit) {
+            html += bold_prop_line('Vitality', properties.vit, colors.hp)
+        }
+        if (properties.mp) {
+            html += bold_prop_line('MP', properties.mp, colors.mp)
+        }
+        if (properties.stat) {
+            html += bold_prop_line('Stat', properties.stat)
+        }
+        if (properties.armor) {
+            html += bold_prop_line('Armor', properties.armor, colors.armor)
+        }
+        if (properties.apiercing) {
+            html += bold_prop_line('A.Piercing', properties.apiercing, colors.armor)
+        }
+        if (properties.rpiercing) {
+            html += bold_prop_line('R.Piercing', properties.rpiercing, colors.resistance)
+        }
+        if (properties.resistance) {
+            html += bold_prop_line('Resistance', properties.resistance, colors.resistance)
+        }
+        if (item.wspeed == 'slow') {
+            html += bold_prop_line('Speed', 'Slow', 'gray')
+        }
+        if (properties.speed) {
+            html += bold_prop_line(item.wtype &amp;&amp; 'Run Speed' || 'Speed', ((properties.speed > 0) &amp;&amp; '+' || '') + properties.speed, colors.speed)
+        }
+        if (properties.charisma) {
+            html += bold_prop_line('Charisma', properties.charisma, '#4DB174')
+        }
+        if (properties.cuteness) {
+            html += bold_prop_line('Cuteness', properties.cuteness, '#FD82F0')
+        }
+        if (grade == 1) {
+            html += bold_prop_line('Grade', 'High', '#696354')
+        }
+        if (grade == 2) {
+            html += bold_prop_line('Grade', 'Rare', '#6668AC')
+        }
+        if (m &amp;&amp; item.type == 'elixir' &amp;&amp; i.slot == 'elixir') {
+            var h = round(( - msince(new Date(m.expires))) / (6)) / 10;
+            html += bold_prop_line('Hours', h, 'gray')
+        } else {
+            if (item.type == 'elixir') {
+                html += bold_prop_line('Hours', item.duration, 'gray')
+            }
+        }
+        if (item.ability) {
+            if (item.ability == 'bash') {
+                html += bold_prop_line('Ability', 'Bash', colors.ability);
+                html += '&lt;div style=\'color: #C3C3C3\'>Stuns the opponent for ' + properties.attr1 + ' seconds with ' + properties.attr0 + '% chance.&lt;/div>'
+            }
+            if (item.ability == 'secondchance') {
+                html += bold_prop_line('Ability', 'Second Chance', colors.ability);
+                html += '&lt;div style=\'color: #C3C3C3\'>Avoid death with a ' + properties.attr0 + '% chance.&lt;/div>'
+            }
+        }
+        if (item.explanation) {
+            html += '&lt;div style=\'color: #C3C3C3\'>' + item.explanation + '&lt;/div>'
+        }
+        if (i.trade &amp;&amp; m) {
+            html += '&lt;div style=\'margin-top: 5px\'>';
+            if ((m.q || 1) > 1) {
+                html += '&lt;div>&lt;span class=\'gray\'>Q:&lt;/span> &lt;div class=\'inline-block tradenum\' contenteditable=true data-q=\'' + m.q + '\'>' + m.q + '&lt;/div>&lt;/div>'
+            }
+            html += '&lt;div>&lt;span style=\'color:gold\'>GOLD' + (((m.q || 1) > 1) &amp;&amp; ' [EACH]' || '') + ':&lt;/span> &lt;div class=\'inline-block sellprice editable\' contenteditable=true>1&lt;/div>&lt;/div>';
+            html += '&lt;div>&lt;span class=\'clickable\' onclick=\'trade("' + i.slot + '","' + i.num + '",$(".sellprice").html(),$(".tradenum").html())\'>PUT UP FOR SALE&lt;/span>&lt;/div>';
+            html += '&lt;/div>'
+        }
+        if (in_arr(i.slot, trade_slots) &amp;&amp; m &amp;&amp; m.price &amp;&amp; i.from_player) {
+            if ((m.q || 1) > 1) {
+                html += '&lt;div>&lt;span class=\'gray\'>Q:&lt;/span> &lt;div class=\'inline-block tradenum\' contenteditable=true data-q=\'1\'>1&lt;/div>&lt;/div>'
+            }
+            html += '&lt;div style=\'color: gold\'>' + to_pretty_num(m.price) + ' GOLD' + ((m.q || 1) > 1 &amp;&amp; ' &lt;span style=\'color: white\'>[EACH]&lt;/span>' || '') + '&lt;/div>';
+            html += '&lt;div>&lt;span class=\'clickable\' onclick=\'trade_buy("' + i.slot + '","' + i.from_player + '","' + (m.rid || '') + '",$(".tradenum").html())\'>BUY&lt;/span>&lt;/div>'
+        }
+        if (value) {
+            if (item.days) {
+                html += '&lt;div style=\'color: #C3C3C3\'>Lasts 30 days&lt;/div>'
+            }
+            if (j) {
+                html += '&lt;div style=\'color: ' + colors.cash + '\'>' + to_pretty_num(item.cash) + ' SHELLS&lt;/div>'
+            } else {
+                html += '&lt;div style=\'color: gold\'>' + to_pretty_num(value) + ' GOLD&lt;/div>'
+            }
+            if (j &amp;&amp; character &amp;&amp; item.cash >= character.cash) {
+                html += '&lt;div style=\'border-top: solid 2px gray; margin-bottom: 2px; margin-top: 3px; margin-left: -1px; margin-right: -1px\'>&lt;/div>';
+                html += '&lt;div style=\'color: #C3C3C3\'>You can find SHELLS from gems, monsters. In future, from achievements. For the time being, to receive SHELLS and support our game:&lt;/div>';
+                html += '&lt;a href=\'https://adventure.land/shells\' class=\'cancela\' target=\'_blank\'>&lt;span class=\'clickable\' style=\'color: #EB8D3F\'>BUY or EARN SHELLS&lt;/span>&lt;/a> '
+            } else {
+                if (item.s) {
+                    var a = 1;
+                    if (item.gives) {
+                        a = 100
+                    }
+                    html += '&lt;div style=\'margin-top: 5px\'>&lt;!--&lt;input type=\'number\' value=\'1\' class=\'buynum itemnumi\'/> -->';
+                    html += '&lt;span class=\'gray\'>Q:&lt;/span> &lt;div class=\'inline-block buynum\' contenteditable=true data-q=\'' + a + '\'>' + a + '&lt;/div> &lt;span class=\'gray\'>|&lt;/span> ';
+                    html += '&lt;span class=\'clickable\' onclick=\'buy("' + id + '",parseInt($(".buynum").html()))\'>BUY&lt;/span> ';
+                    html += '&lt;/div>'
+                } else {
+                    html += '&lt;div>&lt;span class=\'clickable\' onclick=\'buy("' + id + '")\'>BUY&lt;/span>&lt;/div>'
+                }
+            }
+        }
+        if (i.sell &amp;&amp; m) {
+            var l = calculate_item_value(m);
+            html += '&lt;div style=\'color: gold\'>' + to_pretty_num(l) + ' GOLD&lt;/div>';
+            if (item.s &amp;&amp; m.q) {
+                var a = m.q;
+                html += '&lt;div style=\'margin-top: 5px\'>';
+                html += '&lt;span class=\'gray\'>Q:&lt;/span> &lt;div class=\'inline-block sellnum\' contenteditable=true data-q=\'' + a + '\'>' + a + '&lt;/div> &lt;span class=\'gray\'>|&lt;/span> ';
+                html += '&lt;span class=\'clickable\' onclick=\'sell("' + i.num + '",parseInt($(".sellnum").html()))\'>SELL&lt;/span> ';
+                html += '&lt;/div>'
+            } else {
+                html += '&lt;div>&lt;span class=\'clickable\' onclick=\'sell("' + i.num + '")\'>SELL&lt;/span>&lt;/div>'
+            }
+        }
+        if (i.cancel) {
+            html += '&lt;div class=\'clickable\' onclick=\'$(this).parent().remove()\'>CLOSE&lt;/div>'
+        }
+        if (in_arr(id, booster_items)) {
+            if (m &amp;&amp; m.expires) {
+                var h = round(( - msince(new Date(m.expires))) / (6 * 24)) / 10;
+                html += '&lt;div style=\'color: #C3C3C3\'>' + h + ' days&lt;/div>'
+            }
+            html += '&lt;div class=\'clickable\' onclick="btc(event); show_modal($(\'#boosterguide\').html())" style="color: #D86E89">HOW TO USE&lt;/div>'
+        }
+        if (m &amp;&amp; m.name == 'computer' &amp;&amp; gameplay == 'normal') {
+            html += '&lt;div style=\'color: #97C4B8\'>The Computer will regain it\'s capabilities soon.&lt;/div>'
+        }
+        if (m &amp;&amp; m.name == 'computer' &amp;&amp; (i.sell || m.charges !== 0) &amp;&amp; gameplay == 'normal') {
+            html += '&lt;div style=\'color: #C3C3C3\'>CHARGES: ' + (m.charges === undefined &amp;&amp; 2 || m.charges) + '&lt;/div>'
+        }
+        if (!value &amp;&amp; !i.sell &amp;&amp; m &amp;&amp; !i.from_player &amp;&amp; !i.trade) {
+            if (item.type == 'stand') {
+                html += '&lt;div class=\'clickable\' onclick=\'socket.emit("trade_history",{}); $(this).parent().remove()\' style="color: #44484F">TRADE HISTORY&lt;/div>'
+            }
+            if (item.type == 'computer' &amp;&amp; (m.charges === undefined || m.charges) &amp;&amp; gameplay == 'normal') {
+                html += '&lt;div class=\'clickable\' onclick=\'socket.emit("unlock",{name:"code",num:"' + i.num + '"});\' style="color: #BA61A4">UNLOCK&lt;/div>'
+            }
+            if (item.type == 'computer') {
+                html += '&lt;div class=\'clickable\' onclick=\'render_computer($(this).parent())\' style="color: #32A3B0">NETWORK&lt;/div>'
+            }
+            if (item.type == 'stand' &amp;&amp; !character.stand) {
+                html += '&lt;div class=\'clickable\' onclick=\'open_merchant("' + i.num + '"); $(this).parent().remove()\' style="color: #8E5E2C">OPEN&lt;/div>'
+            }
+            if (item.type == 'stand' &amp;&amp; character.stand) {
+                html += '&lt;div class=\'clickable\' onclick=\'close_merchant(); $(this).parent().remove()\' style="color: #8E5E2C">CLOSE&lt;/div>'
+            }
+            if (item.type == 'elixir') {
+                html += '&lt;div class=\'clickable\' onclick=\'socket.emit("equip",{num:"' + i.num + '"}); $(this).parent().remove()\' style="color: #D86E89">DRINK&lt;/div>'
+            }
+            if (in_arr(m.name, [
+                    'stoneofxp',
+                    'stoneofgold',
+                    'stoneofluck'
+                ])) {
+                html += '&lt;div class=\'clickable\' onclick=\'socket.emit("convert",{num:"' + i.num + '"});\' style="color: ' + colors.cash + '">CONVERT TO SHELLS&lt;/div>'
+            }
+            if (in_arr(m.name, booster_items)) {
+                if (m.expires) {
+                    html += '&lt;div class=\'clickable\' onclick=\'shift("' + i.num + '","' + booster_items[(booster_items.indexOf(m.name) + 1) % 3] + '"); $(this).parent().remove()\' style="color: #438EE2">SHIFT&lt;/div>'
+                } else {
+                    html += '&lt;div class=\'clickable\' onclick=\'activate("' + i.num + '","activate"); $(this).parent().remove()\' style="color: #438EE2">ACTIVATE&lt;/div>'
+                }
+            }
+        }
+    }
+    html += '&lt;/div>';
+    if (e == 'html') {
+        return html
+    } else {
+        $(e).html(html)
+    }
+}
+function render_item_selector(a, c) {
+    if (c &amp;&amp; !c.purpose) {
+        purpose = 'buying'
+    }
+    var b = [
+        ],
+        g = 0,
+        e = '&lt;div style=\'border: 5px solid gray; height: 400px; overflow: scroll; background: black\'>';
+    for (var h in G.items) {
+        if (!G.items[h].ignore) {
+            b.push(G.items[h])
+        }
+    }
+    b.sort(function (j, i) {
+        return i.g - j.g
+    });
+    for (var d = 0; d &lt; b.length; d++) {
+        var f = b[d];
+        e += item_container({
+            skin: f.skin,
+            def: f,
+            onclick: 'gallery_click(\'' + f.id + '\')'
+        });
+        g++;
+        if (!(g % 5)) {
+            e += '&lt;br />'
+        }
+    }
+    e += '&lt;/div>';
+    $(a).html(e)
+}
+function on_skill(b) {
+    var a = skillmap[b];
+    if (!a) {
+        return
+    }
+    use_skill(a.name, ctarget)
+}
+function allow_drop(a) {
+    a.preventDefault()
+}
+function on_drag_start(a) {
+    last_drag_start = new Date();
+    a.dataTransfer.setData('text', a.target.id)
+}
+function on_rclick(g) {
+    var b = $(g),
+        a = b.data('inum'),
+        f = b.data('snum'),
+        c = b.data('sname'),
+        h = b.data('onrclick');
+    if (h) {
+        smart_eval(h)
+    } else {
+        if (c !== undefined) {
+            socket.emit('unequip', {
+                slot: c
+            })
+        } else {
+            if (f !== undefined) {
+                socket.emit('bank', {
+                    operation: 'swap',
+                    inv: - 1,
+                    str: f,
+                    pack: last_rendered_items
+                })
+            } else {
+                if (a !== undefined) {
+                    if (topleft_npc == 'items') {
+                        socket.emit('bank', {
+                            operation: 'swap',
+                            inv: a,
+                            str: - 1,
+                            pack: last_rendered_items
+                        })
+                    } else {
+                        if (topleft_npc == 'merchant') {
+                            var i = character.items[parseInt(a)];
+                            if (!i) {
+                                return
+                            }
+                            render_item('#merchant-item', {
+                                item: G.items[i.name],
+                                name: i.name,
+                                actual: i,
+                                sell: 1,
+                                num: parseInt(a)
+                            })
+                        } else {
+                            if (topleft_npc == 'exchange') {
+                                var g = character.items[a],
+                                    d = null;
+                                if (g) {
+                                    d = G.items[g.name]
+                                }
+                                if (!d) {
+                                    return
+                                }
+                                if (d.quest &amp;&amp; exchange_type != d.quest) {
+                                    return
+                                }
+                                if (d.e) {
+                                    if (e_item !== null) {
+                                        return
+                                    }
+                                    e_item = a;
+                                    var e = $('#citem' + a).all_html();
+                                    $('#citem' + a).parent().html('');
+                                    $('#eitem').html(e)
+                                }
+                            } else {
+                                if (topleft_npc == 'upgrade') {
+                                    var g = character.items[a],
+                                        d = null;
+                                    if (g) {
+                                        d = G.items[g.name]
+                                    }
+                                    if (!d) {
+                                        return
+                                    }
+                                    if (d.upgrade) {
+                                        if (u_item !== null) {
+                                            return
+                                        }
+                                        u_item = a;
+                                        var e = $('#citem' + a).all_html();
+                                        $('#citem' + a).parent().html('');
+                                        $('#uweapon').html(e)
+                                    }
+                                    if (d.type == 'uscroll' || d.type == 'pscroll') {
+                                        if (u_scroll !== null) {
+                                            return
+                                        }
+                                        u_scroll = a;
+                                        var e = $('#citem' + a).all_html();
+                                        if ((character.items[a].q || 1) &lt; 2) {
+                                            $('#citem' + a).parent().html('')
+                                        }
+                                        $('#uscroll').html(e)
+                                    }
+                                    if (d.type == 'offering') {
+                                        if (u_offering !== null) {
+                                            return
+                                        }
+                                        u_offering = a;
+                                        var e = $('#citem' + a).all_html();
+                                        if ((character.items[a].q || 1) &lt; 2) {
+                                            $('#citem' + a).parent().html('')
+                                        }
+                                        $('#uoffering').html(e)
+                                    }
+                                } else {
+                                    if (topleft_npc == 'compound') {
+                                        var g = character.items[a],
+                                            d = null;
+                                        if (g) {
+                                            d = G.items[g.name]
+                                        }
+                                        if (!d) {
+                                            return
+                                        }
+                                        if (d.compound &amp;&amp; c_last &lt; 3) {
+                                            c_items[c_last] = a;
+                                            var e = $('#citem' + a).all_html();
+                                            $('#citem' + a).parent().html('');
+                                            $('#compound' + c_last).html(e);
+                                            c_last++
+                                        }
+                                        if (d.type == 'cscroll') {
+                                            if (c_scroll !== null) {
+                                                return
+                                            }
+                                            c_scroll = a;
+                                            var e = $('#citem' + a).all_html();
+                                            if ((character.items[a].q || 1) &lt; 2) {
+                                                $('#citem' + a).parent().html('')
+                                            }
+                                            $('#cscroll').html(e)
+                                        }
+                                        if (d.type == 'offering') {
+                                            if (c_offering !== null) {
+                                                return
+                                            }
+                                            c_offering = a;
+                                            var e = $('#citem' + a).all_html();
+                                            if ((character.items[a].q || 1) &lt; 2) {
+                                                $('#citem' + a).parent().html('')
+                                            }
+                                            $('#coffering').html(e)
+                                        }
+                                    } else {
+                                        if (topleft_npc == 'crafter') {
+                                            var g = character.items[a],
+                                                d = null;
+                                            if (g) {
+                                                d = G.items[g.name]
+                                            }
+                                            if (!d) {
+                                                return
+                                            }
+                                            if (cr_last &lt; 9) {
+                                                cr_items[cr_last] = a;
+                                                var e = $('#citem' + a).all_html();
+                                                $('#citem' + a).parent().html('');
+                                                $('#critem' + cr_last).html(e);
+                                                cr_last++
+                                            }
+                                        } else {
+                                            a = parseInt(a, 10);
+                                            if (character &amp;&amp; character.items[a] &amp;&amp; G.items[character.items[a].name].type == 'elixir') {
+                                                return
+                                            }
+                                            socket.emit('equip', {
+                                                num: a
+                                            })
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+function on_drop(event) {
+    event.preventDefault();
+    var r = event.dataTransfer.getData('text'),
+        j = false,
+        l = false;
+    var c = $(document.getElementById(r)),
+        q = $(event.target);
+    while (q &amp;&amp; q.parent() &amp;&amp; q.attr('ondrop') == undefined) {
+        q = q.parent()
+    }
+    var b = q.data('cnum'),
+        d = q.data('slot'),
+        a = q.data('strnum'),
+        o = q.data('trigrc'),
+        h = q.data('skillid');
+    var s = c.data('inum'),
+        p = c.data('sname'),
+        i = c.data('snum');
+    if (s !== undefined &amp;&amp; h !== undefined) {
+        s = parseInt(s);
+        if ((s || s === 0) &amp;&amp; character.items[s] &amp;&amp; G.items[character.items[s].name].gives) {
+            skillmap[h] = {
+                type: 'item',
+                name: character.items[s].name
+            };
+            render_skillbar()
+        }
+    } else {
+        if (o != undefined &amp;&amp; s != undefined) {
+            on_rclick(c.get(0))
+        } else {
+            if (i != undefined &amp;&amp; a != undefined) {
+                socket.emit('bank', {
+                    operation: 'move',
+                    a: i,
+                    b: a,
+                    pack: last_rendered_items
+                });
+                j = true
+            } else {
+                if (a != undefined &amp;&amp; s != undefined) {
+                    socket.emit('bank', {
+                        operation: 'swap',
+                        inv: s,
+                        str: a,
+                        pack: last_rendered_items
+                    });
+                    l = true
+                } else {
+                    if (b != undefined &amp;&amp; i != undefined) {
+                        socket.emit('bank', {
+                            operation: 'swap',
+                            inv: b,
+                            str: i,
+                            pack: last_rendered_items
+                        });
+                        l = true
+                    } else {
+                        if (b !== undefined &amp;&amp; b == s) {
+                            if (is_mobile &amp;&amp; mssince(last_drag_start) &lt; 300) {
+                                inventory_click(parseInt(s))
+                            }
+                        } else {
+                            if (b != undefined &amp;&amp; s != undefined) {
+                                socket.emit('imove', {
+                                    a: b,
+                                    b: s
+                                });
+                                j = true
+                            } else {
+                                if (p !== undefined &amp;&amp; p == d) {
+                                    if (is_mobile &amp;&amp; mssince(last_drag_start) &lt; 300) {
+                                        slot_click(d)
+                                    }
+                                } else {
+                                    if (b != undefined &amp;&amp; p != undefined) {
+                                        socket.emit('unequip', {
+                                            slot: p,
+                                            position: b
+                                        })
+                                    } else {
+                                        if (d != undefined &amp;&amp; s != undefined) {
+                                            if (in_arr(d, trade_slots)) {
+                                                if (character.slots[d]) {
+                                                    return
+                                                }
+                                                try {
+                                                    var k = character.items[parseInt(s)];
+                                                    render_item('#topleftcornerdialog', {
+                                                        trade: 1,
+                                                        item: G.items[k.name],
+                                                        actual: k,
+                                                        num: parseInt(s),
+                                                        slot: d
+                                                    });
+                                                    $('.editable').focus();
+                                                    dialogs_target = ctarget
+                                                } catch (n) {
+                                                    console.log('TRADE-ERROR: ' + n)
+                                                }
+                                            } else {
+                                                socket.emit('equip', {
+                                                    num: s,
+                                                    slot: d
+                                                }),
+                                                    l = true
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (j) {
+        var g = c.all_html(),
+            f = q.html();
+        q.html('');
+        c.parent().html(f);
+        q.html(g)
+    }
+    if (l) {
+        q.html(c.all_html())
+    }
+}
+function item_container(r, l) {
+    var g = '',
+        d = '',
+        q = 3,
+        h = '',
+        c = '',
+        m = '',
+        a = '',
+        n = r.bcolor || 'gray',
+        s = '',
+        j = r.size || 40;
+    if (l &amp;&amp; l.level &amp;&amp; l.level > 8) {
+        n = '#C5C5C5'
+    }
+    if (r.draggable || !('draggable' in r)) {
+        h += ' draggable=\'true\' ondragstart=\'on_drag_start(event)\'';
+        c += 'ondrop=\'on_drop(event)\' ondragover=\'allow_drop(event)\''
+    }
+    if (r.droppable) {
+        r.trigrc = true;
+        c += 'ondrop=\'on_drop(event)\' ondragover=\'allow_drop(event)\''
+    }
+    if (r.onclick) {
+        c += ' onclick="' + r.onclick + '" class="clickable" '
+    }
+    if (r.cnum != undefined) {
+        a = 'data-cnum=\'' + r.cnum + '\' '
+    }
+    if (r.trigrc != undefined) {
+        a = 'data-trigrc=\'1\''
+    }
+    if (r.strnum != undefined) {
+        a = 'data-strnum=\'' + r.strnum + '\' '
+    }
+    if (r.slot != undefined) {
+        a = 'data-slot=\'' + r.slot + '\' '
+    }
+    if (r.cid) {
+        c += ' id=\'' + r.cid + '\' '
+    }
+    g += '&lt;div ' + a + 'style=\'position: relative; display:inline-block; border: 2px solid ' + n + '; margin: 2px; height: ' + (j + 2 * q) + 'px; width: ' + (j + 2 * q) + 'px; background: black; vertical-align: top\' ' + c + '>';
+    if (r.skid &amp;&amp; !r.skin) {
+        g += '&lt;div class=\'truui\' style=\'border-color: gray; color: white\'>' + r.skid + '&lt;/div>'
+    }
+    if (r.shade) {
+        var o = G.itemsets[G.positions[r.shade][0] || 'pack_1a'],
+            b = j / o.size;
+        var k = G.positions[r.shade][1],
+            i = G.positions[r.shade][2];
+        g += '&lt;div style=\'position: absolute; top: -2px; left: -2px; padding:' + (q + 2) + 'px\'>';
+        g += '&lt;div style=\'overflow: hidden; height: ' + (j) + 'px; width: ' + (j) + 'px;\'>';
+        g += '&lt;img style=\'width: ' + (o.columns * o.size * b) + 'px; height: ' + (o.rows * o.size * b) + 'px; margin-top: -' + (i * j) + 'px; margin-left: -' + (k * j) + 'px; opacity: ' + (r.s_op || 0.2) + ';\' src=\'' + o.file + '\' draggable=\'false\' />';
+        g += '&lt;/div>';
+        g += '&lt;/div>'
+    }
+    if (r.skin) {
+        if (!G.positions[r.skin]) {
+            r.skin = 'placeholder'
+        }
+        var p = G.itemsets[G.positions[r.skin][0] || 'pack_1a'],
+            f = G.positions[r.skin][1],
+            e = G.positions[r.skin][2];
+        var t = j / p.size;
+        if (l &amp;&amp; l.level &amp;&amp; l.level > 7) {
+            s += ' glow' + r.level
+        }
+        if (r.num != undefined) {
+            m = 'class=\'rclick' + s + '\' data-inum=\'' + r.num + '\''
+        }
+        if (r.snum != undefined) {
+            m = 'class=\'rclick' + s + '\' data-snum=\'' + r.snum + '\''
+        }
+        if (r.sname != undefined) {
+            m = 'class=\'rclick' + s + '\' data-sname=\'' + r.sname + '\''
+        }
+        if (r.on_rclick) {
+            m = 'class=\'rclick' + s + '\' data-onrclick="' + r.on_rclick + '"'
+        }
+        g += '&lt;div ' + m + ' style=\'background: black; position: absolute; bottom: -2px; left: -2px; border: 2px solid ' + n + ';';
+        g += 'padding:' + (q) + 'px; overflow: hidden\' id=\'' + r.id + '\' ' + h + '>';
+        g += '&lt;div style=\'overflow: hidden; height: ' + (j) + 'px; width: ' + (j) + 'px;\'>';
+        g += '&lt;img style=\'width: ' + (p.columns * p.size * t) + 'px; height: ' + (p.rows * p.size * t) + 'px; margin-top: -' + (e * j) + 'px; margin-left: -' + (f * j) + 'px;\' src=\'' + p.file + '\' draggable=\'false\' />';
+        g += '&lt;/div>';
+        if (l) {
+            if (l.q &amp;&amp; l.q != 1) {
+                g += '&lt;div class=\'iqui\'>' + l.q + '&lt;/div>'
+            }
+            if (l.level) {
+                g += '&lt;div class=\'iuui level' + l.level + '\' style=\'border-color: ' + n + '\'>' + (l.level == 10 &amp;&amp; 'X' || l.level) + '&lt;/div>'
+            }
+        }
+        if (r.slot &amp;&amp; in_arr(r.slot, trade_slots)) {
+            g += '&lt;div class=\'truui\' style=\'border-color: ' + n + ';\'>$&lt;/div>'
+        }
+        if (r.skid) {
+            g += '&lt;div class=\'skidloader' + r.skid + '\' style=\'position: absolute; bottom: 0px; right: 0px; width: 4px; height: 0px; background-color: yellow\'>&lt;/div>';
+            g += '&lt;div class=\'truui\' style=\'border-color: gray; color: white\'>' + r.skid + '&lt;/div>'
+        }
+        g += '&lt;/div>'
+    }
+    g += '&lt;/div>';
+    return g
+}
+function load_skills() {
+    if (0) {
+    } else {
+        if (character.ctype == 'warrior' || character.ctype == 'rogue') {
+            skillbar = [
+                '1',
+                '2',
+                '3',
+                'Q',
+                'R'
+            ]
+        } else {
+            if (character.ctype == 'merchant') {
+                skillbar = [
+                    '1',
+                    '2',
+                    '3',
+                    '4',
+                    '5'
+                ]
+            } else {
+                skillbar = [
+                    '1',
+                    '2',
+                    '3',
+                    '4',
+                    'R'
+                ]
+            }
+        }
+        if (character.ctype == 'warrior') {
+            skillmap = {
+                '1': {
+                    name: 'use_hp'
+                },
+                '2': {
+                    name: 'use_mp'
+                },
+                Q: {
+                    name: 'taunt'
+                },
+                R: {
+                    name: 'charge'
+                }
+            }
+        } else {
+            if (character.ctype == 'mage') {
+                skillmap = {
+                    '1': {
+                        name: 'use_hp'
+                    },
+                    '2': {
+                        name: 'use_mp'
+                    },
+                    Q: {
+                        name: 'light'
+                    },
+                    R: {
+                        name: 'burst'
+                    }
+                }
+            } else {
+                if (character.ctype == 'priest') {
+                    skillmap = {
+                        '1': {
+                            name: 'use_hp'
+                        },
+                        '2': {
+                            name: 'use_mp'
+                        },
+                        R: {
+                            name: 'curse'
+                        }
+                    }
+                } else {
+                    if (character.ctype == 'ranger') {
+                        skillmap = {
+                            '1': {
+                                name: 'use_hp'
+                            },
+                            '2': {
+                                name: 'use_mp'
+                            },
+                            R: {
+                                name: 'supershot'
+                            }
+                        }
+                    } else {
+                        if (character.ctype == 'rogue') {
+                            skillmap = {
+                                '1': {
+                                    name: 'use_hp'
+                                },
+                                '2': {
+                                    name: 'use_mp'
+                                },
+                                R: {
+                                    name: 'invis'
+                                },
+                                Q: {
+                                    name: 'pcoat'
+                                }
+                            }
+                        } else {
+                            if (character.ctype == 'merchant') {
+                                skillmap = {
+                                    '1': {
+                                        name: 'use_hp'
+                                    },
+                                    '2': {
+                                        name: 'use_mp'
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        skillmap.X = {
+            name: 'use_town'
+        }
+    }
+}
+function render_skillbar(b) {
+    if (b) {
+        $('#skillbar').html('').hide();
+        return
+    }
+    var a = '&lt;div style=\'background-color: black; border: 5px solid gray; padding: 2px; display: inline-block\' class=\'enableclicks\'>';
+    skillbar.forEach(function (d) {
+        var c = skillmap[d];
+        if (c) {
+            a += item_container({
+                skid: d,
+                skin: G.skills[c.name].skin,
+                draggable: false
+            }, c)
+        } else {
+            a += item_container({
+                skid: d,
+                draggable: false
+            })
+        }
+        a += '&lt;div>&lt;/div>'
+    });
+    a += '&lt;/div>';
+    $('#skillbar').html(a).css('display', 'inline-block')
+}
+function skill_click(a) {
+    if (skillsui &amp;&amp; skillmap[a]) {
+        render_skill('#skills-item', skillmap[a].name, skillmap[a])
+    }
+}
+function render_skills() {
+    var e = 0,
+        a = 'text-align: right';
+    if (skillsui) {
+        $('#theskills').remove();
+        skillsui = false;
+        render_skillbar();
+        return
+    }
+    var d = '&lt;div id=\'skills-item\' style=\'display: inline-block; vertical-align: top; margin-right: 5px\'>&lt;/div>';
+    d += '&lt;div style=\'background-color: black; border: 5px solid gray; padding: 2px; font-size: 24px; display: inline-block\'>';
+    d += '&lt;div class=\'textbutton\' style=\'margin-left: 5px\'>SLOTS&lt;/div>';
+    d += '&lt;div>';
+    [
+        '1',
+        '2',
+        '3',
+        '4',
+        '5',
+        '6',
+        '7'
+    ].forEach(function (f) {
+        d += item_container({
+            skid: f,
+            skin: skillmap[f] &amp;&amp; (G.skills[skillmap[f].name] &amp;&amp; G.skills[skillmap[f].name].skin || skillmap[f].name),
+            onclick: 'skill_click(\'' + f + '\')'
+        }, skillmap[f])
+    });
+    d += '&lt;/div>';
+    d += '&lt;div>';
+    [
+        'Q',
+        'W',
+        'E',
+        'R',
+        'TAB',
+        'X',
+        '8'
+    ].forEach(function (f) {
+        d += item_container({
+            skid: f,
+            skin: skillmap[f] &amp;&amp; (G.skills[skillmap[f].name] &amp;&amp; G.skills[skillmap[f].name].skin || skillmap[f].name),
+            onclick: 'skill_click(\'' + f + '\')'
+        }, skillmap[f])
+    });
+    d += '&lt;/div>';
+    d += '&lt;div class=\'textbutton\' style=\'margin-left: 5px\'>ABILITIES &lt;span style=\'float:right; color: #99D9B9; margin-right: 5px\'>WORK IN PROGRESS!&lt;/span>&lt;/div>';
+    for (var c = 0; c &lt; 2; c++) {
+        d += '&lt;div>';
+        for (var b = 0; b &lt; 7; b++) {
+            d += item_container({
+            })
+        }
+        d += '&lt;/div>'
+    }
+    d += '&lt;div class=\'textbutton\' style=\'margin-left: 5px\'>SKILLS&lt;/div>';
+    d += '&lt;div>';
+    for (var b = 0; b &lt; 7; b++) {
+        d += item_container({
+        })
+    }
+    d += '&lt;/div>';
+    d += '&lt;/div>';
+    skillsui = true;
+    render_skillbar(1);
+    $('body').append('&lt;div id=\'theskills\' style=\'position: fixed; z-index: 310; bottom: 0px; right: 0px\'>&lt;/div>');
+    $('#theskills').html(d)
+}
+function render_interaction(h, f) {
+    topleft_npc = 'interaction';
+    rendered_target = topleft_npc;
+    rendered_interaction = h;
+    var b = 0,
+        i = 0,
+        d = '/images/tiles/characters/npc1.png',
+        c = 'normal';
+    var g = '&lt;div style=\'background-color: #E5E5E5; color: #010805; border: 5px solid gray; padding: 6px 12px 6px 12px; font-size: 30px; display: inline-block; max-width: 420px\'>';
+    if (in_arr(h, [
+            'wizard'
+        ])) {
+        b = 2;
+        i = 0;
+        d = '/images/tiles/characters/chara8.png'
+    } else {
+        if (in_arr(h, [
+                'santa',
+                'candycane_success'
+            ])) {
+            b = 0;
+            i = 0;
+            d = '/images/tiles/characters/animationc.png';
+            c = 'animation'
+        } else {
+            if (in_arr(h, [
+                    'leathers',
+                    'leather_success'
+                ])) {
+                b = 1;
+                i = 0;
+                d = '/images/tiles/characters/npc5.png'
+            } else {
+                if (in_arr(h, [
+                        'lostearring',
+                        'lostearring_success'
+                    ])) {
+                    b = 3;
+                    i = 0;
+                    d = '/images/tiles/characters/chara8.png'
+                } else {
+                    if (in_arr(h, [
+                            'mistletoe',
+                            'mistletoe_success'
+                        ])) {
+                        b = 0;
+                        i = 0;
+                        d = '/images/tiles/characters/chara8.png'
+                    } else {
+                        if (in_arr(h, [
+                                'ornaments',
+                                'ornament_success'
+                            ])) {
+                            b = 1;
+                            i = 0;
+                            d = '/images/tiles/characters/chara8.png'
+                        } else {
+                            if (in_arr(h, [
+                                    'jailer',
+                                    'guard',
+                                    'blocker'
+                                ])) {
+                                b = 3;
+                                i = 0;
+                                d = '/images/tiles/characters/chara5.png'
+                            } else {
+                                if (in_arr(h, [
+                                        'seashells',
+                                        'seashell_success'
+                                    ])) {
+                                    b = 0;
+                                    i = 1;
+                                    d = '/images/tiles/characters/npc1.png'
+                                } else {
+                                    if (in_arr(h, [
+                                            'lottery'
+                                        ])) {
+                                        b = 3;
+                                        i = 0;
+                                        d = '/images/tiles/characters/npc6.png'
+                                    } else {
+                                        if (in_arr(h, [
+                                                'newupgrade'
+                                            ])) {
+                                            b = 3;
+                                            i = 1;
+                                            d = '/images/tiles/characters/chara8.png'
+                                        } else {
+                                            if (h == 'tavern') {
+                                                b = 0;
+                                                i = 1;
+                                                d = '/images/tiles/characters/custom1.png'
+                                            } else {
+                                                if (h == 'standmerchant') {
+                                                    b = 3;
+                                                    i = 0;
+                                                    d = '/images/tiles/characters/npc5.png'
+                                                } else {
+                                                    if (h == 'subscribe') {
+                                                        b = 3;
+                                                        i = 1;
+                                                        d = '/images/tiles/characters/chara7.png'
+                                                    } else {
+                                                        if (in_arr(h, [
+                                                                'gemfragments',
+                                                                'gemfragment_success'
+                                                            ])) {
+                                                            b = 2;
+                                                            i = 1;
+                                                            d = '/images/tiles/characters/npc1.png'
+                                                        } else {
+                                                            if (in_arr(h, [
+                                                                    'unlock_items2',
+                                                                    'unlock_items3',
+                                                                    'unlock_items4',
+                                                                    'unlock_items5',
+                                                                    'unlock_items6',
+                                                                    'unlock_items7'
+                                                                ])) {
+                                                                b = 3;
+                                                                i = 1;
+                                                                d = '/images/tiles/characters/npc4.png';
+                                                                if (h == 'unlock_items2') {
+                                                                    i = 1,
+                                                                        b = 0
+                                                                }
+                                                                if (h == 'unlock_items3') {
+                                                                    i = 1,
+                                                                        b = 0
+                                                                }
+                                                                if (h == 'unlock_items4') {
+                                                                    i = 1,
+                                                                        b = 2
+                                                                }
+                                                                if (h == 'unlock_items5') {
+                                                                    i = 1,
+                                                                        b = 2
+                                                                }
+                                                                if (h == 'unlock_items6') {
+                                                                    i = 0,
+                                                                        b = 1
+                                                                }
+                                                                if (h == 'unlock_items7') {
+                                                                    i = 0,
+                                                                        b = 1
+                                                                }
+                                                            } else {
+                                                                return
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    if (c == 'normal') {
+        g += '&lt;div style=\'float: left; margin-top: -20px; width: 104px; height: 92px; overflow: hidden\'>&lt;img style=\'margin-left: -' + (104 * (b * 3 + 1)) + 'px; margin-top: -' + (144 * (i * 4)) + 'px; width: 1248px; height: 1152px;\' src=\'' + d + '\'/>&lt;/div>'
+    } else {
+        g += '&lt;div style=\'float: left; margin-top: -20px; width: 104px; height: 98px; overflow: hidden\'>&lt;img style=\'margin-left: -' + (188 * b + 40) + 'px; margin-top: -' + (200 * i + 50) + 'px; width: 2256px; height: 1600px;\' src=\'' + d + '\'/>&lt;/div>'
+    }
+    if (h == 'seashells') {
+        g += 'Ah, I love the sea, so calming. As a kid, I loved spending time on the beach. Collecting seashells. If you happen to find some, I would love to add them to my collection.';
+        g += '&lt;span style=\'float: right; margin-top: 5px\'>&lt;div class=\'slimbutton\' onclick=\'render_exchange_shrine("seashell")\'>I HAVE 20!&lt;/div>&lt;/span>'
+    } else {
+        if (h == 'seashell_success') {
+            if (Math.random() &lt; 0.001) {
+                g += 'Awww. Ty. Ty. Ty. Xoxo.'
+            } else {
+                g += 'How kind of you! Please accept this small gift in return.'
+            }
+            d_text('+1', get_npc('fisherman'), {
+                color: '#DFE9D9'
+            })
+        } else {
+            if (h == 'subscribe') {
+                g += 'It\'s that time of the day! Are you in?!';
+                g += '&lt;span style=\'float: right; margin-top: 5px\'>&lt;div class=\'slimbutton\' onclick=\'socket.emit("signup")\'>SIGN ME UP!&lt;/div>&lt;/span>'
+            } else {
+                if (h == 'tavern') {
+                    g += 'Tavern. A place for adventurers to relax, drink, unwind, play games, wager, challenge each other in friendly games. Currently under construction.'
+                } else {
+                    if (h == 'newupgrade') {
+                        g += 'Adventurer! I can upgrade your weapons or armors. Combine 3 accessories to make a stronger one! Tho, beware, the process isn\'t perfect. Sometimes the items are ... lost.';
+                        g += '&lt;span style=\'float: right; margin-top: 5px\'>&lt;div class=\'slimbutton\' onclick=\'render_upgrade_shrine()\'>UPGRADE&lt;/div> &lt;div class=\'slimbutton\' onclick=\'render_compound_shrine()\'>COMBINE&lt;/div>&lt;/span>'
+                    } else {
+                        if (h == 'wizard') {
+                            g += 'Well, Hello there! I\'m Wizard, I made this game. Hope you enjoy it. If you have any issues, suggestions, feel free to email me at hello@adventure.land!'
+                        } else {
+                            if (h == 'santa') {
+                                g += 'Happy holidays! Please excuse my companion, he is a bit grumpy. If you happen to find any candy canes, that might cheer him up!';
+                                g += '&lt;span style=\'float: right; margin-top: 5px\'>&lt;div class=\'slimbutton\' onclick=\'render_exchange_shrine("candycane")\'>I HAVE ONE!&lt;/div>&lt;/span>'
+                            } else {
+                                if (h == 'standmerchant') {
+                                    g += 'Anyone can become a merchant and start trading. You only need a merchant stand to display your items on!';
+                                    g += '&lt;span style=\'float: right; margin-top: 5px\'>&lt;div class=\'slimbutton\' onclick=\'render_merchant(get_npc("standmerchant"))\'>LET ME BUY ONE!&lt;/div>&lt;/span>'
+                                } else {
+                                    if (h == 'candycane_success') {
+                                        g += 'Ah! Thanks for cheering him up. Here\'s something for you in return!'
+                                    } else {
+                                        if (h == 'lostearring') {
+                                            g += 'Ewww. Ewww. Ewww. These wretched things ate my earrings. Kill them, kill them all. Bring my earrings back!';
+                                            g += '&lt;span style=\'float: right; margin-top: 5px\'>&lt;div class=\'slimbutton\' onclick=\'render_exchange_shrine("lostearring")\'>AS YOU WISH&lt;/div>&lt;/span>'
+                                        } else {
+                                            if (h == 'lostearring_success') {
+                                                g += 'You did well. Here\'s something left from one of my old husbands...'
+                                            } else {
+                                                if (h == 'mistletoe') {
+                                                    g += 'You know, It gets boring in here sometimes ... I\'m looking for some excitement. Uhm, Do you have a Mistletoe?';
+                                                    g += '&lt;span style=\'float: right; margin-top: 5px\'>&lt;div class=\'slimbutton\' onclick=\'render_exchange_shrine("mistletoe")\'>OH MY, I DO!&lt;/div>&lt;/span>'
+                                                } else {
+                                                    if (h == 'mistletoe_success') {
+                                                        g += 'Haha! You thought I was going to give you a kiss?! You wish... Take this instead!'
+                                                    } else {
+                                                        if (h == 'ornaments') {
+                                                            g += 'Hmm. We should decorate these trees. I need some Ornaments tho. If you happen to collect ' + G.items.ornament.e + ' of them, let me know!';
+                                                            g += '&lt;span style=\'float: right; margin-top: 5px\'>&lt;div class=\'slimbutton\' onclick=\'render_exchange_shrine("ornament")\'>YOU GOT IT!&lt;/div>&lt;/span>'
+                                                        } else {
+                                                            if (h == 'ornament_success') {
+                                                                g += 'Thank you! Here\'s something in return.'
+                                                            } else {
+                                                                if (h == 'gemfragment_success') {
+                                                                    g += 'Bwahahahahah *cough* Ehem.. Thanks! You got a good deal. Keep bringing these fragments to me, don\'t give them to anyone else.';
+                                                                    d_text('+1', get_npc('gemmerchant'), {
+                                                                        color: '#E78295'
+                                                                    })
+                                                                } else {
+                                                                    if (h == 'gemfragments') {
+                                                                        g += 'Back in the day we had miners, then came the moles, they work for free yet retrieving the gems is a challenge. Bring me ' + G.items.gemfragment.e + ' gem fragments and I can give you something exciting in return, no questions asked.';
+                                                                        g += '&lt;span style=\'float: right; margin-top: 5px\'>&lt;div class=\'slimbutton\' onclick=\'render_exchange_shrine("gemfragment")\'>I GOT ' + G.items.gemfragment.e + '!&lt;/div>&lt;/span>'
+                                                                    } else {
+                                                                        if (h == 'leathers') {
+                                                                            g += 'Hey, hey, hey! What brings you to this cold land? I personally love it here, ideal for my work. If you can bring me ' + G.items.leather.e + ' Leathers, I can give you one of my products in return.';
+                                                                            g += '&lt;span style=\'float: right; margin-top: 5px\'>&lt;div class=\'slimbutton\' onclick=\'render_exchange_shrine("leather")\'>I HAVE ' + G.items.leather.e + '!&lt;/div>&lt;/span>'
+                                                                        } else {
+                                                                            if (h == 'leather_success') {
+                                                                                g += 'Here you go! Enjoy! Keep bringing leathers to me, I have a lot to offer!';
+                                                                                d_text('+1', get_npc('leathermerchant'), {
+                                                                                    color: '#DFE9D9'
+                                                                                })
+                                                                            } else {
+                                                                                if (h == 'jailer') {
+                                                                                    g += 'Tu-tu-tu. Have you been a bad ' + (Math.random() &lt; 0.5 &amp;&amp; 'boy' || 'girl') + '? No worries. The lawmakers must see the potential in you, so instead of getting rid of you, they sent you here. You are free to leave whenever you want. But please don\'t repeat your mistake.';
+                                                                                    g += '&lt;span style=\'float: right; margin-top: 5px\'>&lt;div class=\'slimbutton\' onclick=\'socket.emit("leave")\'>LEAVE&lt;/div>&lt;/span>'
+                                                                                } else {
+                                                                                    if (h == 'blocker' || h == 'guard') {
+                                                                                        var a = Math.random();
+                                                                                        if (a &lt; 0.5) {
+                                                                                            g += 'Hmm. hmm. hmm. Can\'t let you pass. Check again later tho!'
+                                                                                        } else {
+                                                                                            g += 'There\'s some work going on inside. Maybe check back later!'
+                                                                                        }
+                                                                                    } else {
+                                                                                        if (h == 'lottery') {
+                                                                                            g += 'Hi Dear! The lottery tickets for this week haven\'t arrived yet. Apologies :)'
+                                                                                        } else {
+                                                                                            if (in_arr(h, [
+                                                                                                    'unlock_items2',
+                                                                                                    'unlock_items3',
+                                                                                                    'unlock_items4',
+                                                                                                    'unlock_items5',
+                                                                                                    'unlock_items6',
+                                                                                                    'unlock_items7'
+                                                                                                ])) {
+                                                                                                var k = 'items2',
+                                                                                                    e = 75000000,
+                                                                                                    j = 600;
+                                                                                                if (h == 'unlock_items3') {
+                                                                                                    k = 'items3'
+                                                                                                }
+                                                                                                if (h == 'unlock_items4') {
+                                                                                                    k = 'items4',
+                                                                                                        e = 100000000,
+                                                                                                        j = 800
+                                                                                                }
+                                                                                                if (h == 'unlock_items5') {
+                                                                                                    k = 'items5',
+                                                                                                        e = 100000000,
+                                                                                                        j = 800
+                                                                                                }
+                                                                                                if (h == 'unlock_items6') {
+                                                                                                    k = 'items6',
+                                                                                                        e = 112500000,
+                                                                                                        j = 900
+                                                                                                }
+                                                                                                if (h == 'unlock_items7') {
+                                                                                                    k = 'items7',
+                                                                                                        e = 112500000,
+                                                                                                        j = 900
+                                                                                                }
+                                                                                                g += 'Hello! You don\'t seem to have an account open with me. Would you like to open one? It costs ' + to_pretty_num(e) + ' Gold or ' + to_pretty_num(j) + ' Shells. We hold onto your items forever.';
+                                                                                                g += '&lt;span style=\'float: right; margin-top: 5px\'>&lt;div class=\'slimbutton\' onclick=\'socket.emit("bank",{operation:"unlock",gold:1,pack:"' + k + '"})\' style=\'margin-right: 5px;\'>USE GOLD&lt;/div>&lt;div class=\'slimbutton\' onclick=\'socket.emit("bank",{operation:"unlock",shells:1,pack:"' + k + '"})\'>USE SHELLS&lt;/div>&lt;/span>'
+                                                                                            } else {
+                                                                                                return
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    g += '&lt;/div>';
+    $('#topleftcornerui').html(g)
+}
+function load_nearby() {
+    friends_inside = 'nearby';
+    var c = '',
+        a = false;
+    for (var f in entities) {
+        var b = entities[f];
+        if (!is_player(b)) {
+            continue
+        }
+        a = true
+    }
+    if (a) {
+        c += '&lt;table style=\'margin: 5px; text-align: center\'>';
+        c += '&lt;tr style=\'color: gray; text-decoration: underline\'>&lt;th style=\'width: 100px\'>Name&lt;/th>&lt;th style=\'width: 60px\'>Level&lt;/th>&lt;th style=\'width: 100px\'>Class&lt;/th>&lt;th style=\'width: 100px\'>Status&lt;/th>&lt;th style=\'width: 120px\'>Actions&lt;/th>&lt;/tr>';
+        for (var f in entities) {
+            var b = entities[f],
+                d = 'AFK',
+                e = '';
+            if (!is_player(b)) {
+                continue
+            }
+            if (!b.afk) {
+                d = '&lt;span style=\'color: #34bf15\'>Active&lt;/span>'
+            }
+            if (b.owner &amp;&amp; in_arr(b.owner, friends)) {
+                e += ' &lt;span style=\'color: #EC82C4\'>FRIENDS!&lt;/span>'
+            } else {
+                e += ' &lt;span style=\'color: #2799DD\' class=\'clickable\' onclick=\'socket.emit("friend",{event:"request",name:"' + b.name + '"})\'>+FRIEND&lt;/span>'
+            }
+            if (!e) {
+                e = 'None'
+            }
+            c += '&lt;tr>&lt;td class=\'clickable\' onclick=\'target_player("' + b.name + '")\'>' + b.name + '&lt;/td>&lt;td>' + b.level + '&lt;/td>&lt;td>' + b.ctype.toUpperCase() + '&lt;/td>&lt;td>' + d + '&lt;/td>&lt;td>' + e + '&lt;/td>&lt;/tr>'
+        }
+        c += '&lt;/table>'
+    } else {
+        c = '&lt;div style=\'margin-top: 8px\'>There is no one nearby.&lt;/div>'
+    }
+    $('.friendslist').html(c);
+    $('.friendslist').parent().find('.active2').removeClass('active2');
+    $('.fnearby').addClass('active2')
+}
+function load_friends(b) {
+    if (b) {
+        if (friends_inside != 'friends') {
+            return
+        }
+        var a = '';
+        if (!b.chars.length) {
+            a = '&lt;div style=\'margin-top: 8px\'>No one online.&lt;/div>'
+        } else {
+            a += '&lt;table style=\'margin: 5px; text-align: center\'>';
+            a += '&lt;tr style=\'color: gray; text-decoration: underline\'>&lt;th style=\'width: 100px\'>Name&lt;/th>&lt;th style=\'width: 60px\'>Level&lt;/th>&lt;th style=\'width: 100px\'>Class&lt;/th>&lt;th style=\'width: 100px\'>Status&lt;/th>&lt;th style=\'width: 120px\'>Server&lt;/th>&lt;/tr>';
+            b.chars.forEach(function (c) {
+                var d = 'AFK';
+                if (!c.afk) {
+                    d = '&lt;span style=\'color: #34bf15\'>Active&lt;/span>'
+                }
+                a += '&lt;tr>&lt;td>' + c.name + '&lt;/td>&lt;td>' + c.level + '&lt;/td>&lt;td>' + c.type.toUpperCase() + '&lt;/td>&lt;td>' + d + '&lt;/td>&lt;td>' + c.server + '&lt;/td>&lt;/tr>'
+            });
+            a += '&lt;/table>'
+        }
+        $('.friendslist').html(a)
+    } else {
+        friends_inside = 'friends';
+        api_call('pull_friends');
+        $('.friendslist').html('');
+        $('.friendslist').parent().find('.active2').removeClass('active2');
+        $('.ffriends').addClass('active2')
+    }
+}
+function load_server_list(b) {
+    if (b) {
+        if (friends_inside != 'server') {
+            return
+        }
+        var a = '';
+        if (!b.length) {
+            a = '&lt;div style=\'margin-top: 8px\'>No one discoverable.&lt;/div>'
+        } else {
+            a += '&lt;table style=\'margin: 5px; text-align: center\'>';
+            a += '&lt;tr style=\'color: gray; text-decoration: underline\'>&lt;th style=\'width: 100px\'>Name&lt;/th>&lt;th style=\'width: 60px\'>Level&lt;/th>&lt;th style=\'width: 100px\'>Class&lt;/th>&lt;th style=\'width: 100px\'>Status&lt;/th>&lt;th style=\'width: 120px\'>Party&lt;/th>';
+            if (is_pvp) {
+                a += '&lt;th style=\'width: 120px\'>Kills&lt;/th>'
+            }
+            a += '&lt;/tr>';
+            b.forEach(function (d) {
+                var e = 'AFK',
+                    c = d.party;
+                if (!d.afk) {
+                    e = '&lt;span style=\'color: #34bf15\'>Active&lt;/span>'
+                }
+                if (!d.party &amp;&amp; d.name != character.name) {
+                    c = '&lt;span style=\'color: #34BCAF\' class=\'clickable\' onclick=\'parent.socket.emit("party",{event:"invite",name:"' + d.name + '"})\'>Invite&lt;/span>'
+                } else {
+                    if (!d.party) {
+                        c = '&lt;span style=\'color: #999999\'>You&lt;/span>'
+                    } else {
+                        c = '&lt;span style=\'color: #9F68C0\'>' + d.party + '&lt;/span>'
+                    }
+                }
+                if (d.name != character.name) {
+                    c += ' &lt;span style=\'color: #A255BA\' class=\'clickable\' onclick=\'hide_modal(); cpm_window("' + d.name + '");\'>PM&lt;/span>'
+                }
+                a += '&lt;tr>&lt;td>' + d.name + '&lt;/td>&lt;td>' + d.level + '&lt;/td>&lt;td>' + d.type.toUpperCase() + '&lt;/td>&lt;td>' + e + '&lt;/td>&lt;td>' + c + '&lt;/td>';
+                if (is_pvp) {
+                    a += '&lt;td>' + to_pretty_num(d.kills) + '&lt;/td>'
+                }
+                a += '&lt;/tr>'
+            });
+            a += '&lt;/table>'
+        }
+        $('.friendslist').html(a)
+    } else {
+        friends_inside = 'server';
+        socket.emit('players');
+        $('.friendslist').html('');
+        $('.friendslist').parent().find('.active2').removeClass('active2');
+        $('.fserver').addClass('active2')
+    }
+}
+function load_coming_soon(a) {
+    var b = 'Coming Sooner!';
+    $('.friendslist').parent().find('.active2').removeClass('active2');
+    if (a == 1) {
+        $('.fserver').addClass('active2')
+    } else {
+        if (a == 2) {
+            $('.fguild').addClass('active2'),
+                b = 'Coming Soon!'
+        } else {
+            if (a == 3) {
+                $('.fleaders').addClass('active2'),
+                    b = 'Planned, along with achievements, character statistics, weekly, monthly leaderboards'
+            } else {
+                if (a == 4) {
+                    $('.fmail').addClass('active2'),
+                        b = 'Coming Soon!'
+                }
+            }
+        }
+    }
+    $('.friendslist').html('&lt;div style=\'margin-top: 8px\'>' + b + '&lt;/div>')
+}
+var friends_inside = 'nearby';
+function render_friends() {
+    var a = '';
+    a += '&lt;div style=\'text-align: center\'>';
+    a += '&lt;div class=\'gamebutton ffriends\' onclick=\'load_friends()\'>Friends&lt;/div> &lt;div class=\'gamebutton fnearby\' onclick=\'load_nearby()\'>Nearby&lt;/div>';
+    if (!is_pvp || 1) {
+        a += ' &lt;div class=\'gamebutton fserver\' onclick=\'load_server_list();\'>Server&lt;/div>'
+    }
+    a += ' &lt;div class=\'gamebutton fguild\' onclick=\'load_coming_soon(2)\'>Guild&lt;/div> &lt;div class=\'gamebutton fmail\' onclick=\'load_coming_soon(4)\'>Mail&lt;/div> &lt;div class=\'gamebutton fleaders\' onclick=\'load_coming_soon(3)\'>Leaderboards&lt;/div>';
+    a += '&lt;div class=\'friendslist mt5\' style=\'height: 400px; border: 5px solid gray; font-size: 24px; overflow: scroll; padding: 6px\'>&lt;/div>';
+    a += '&lt;div style=\'font-size: 16px; margin-top: 5px; color: gray; text-align: center\'>NOTE: The Communicator is an evolving protoype with missing features&lt;/div>';
+    a += '&lt;/div>';
+    show_modal(a, {
+    });
+    load_nearby()
+}
+var IID = null;
+function precompute_image_positions() {
+    if (IID) {
+        return
+    }
+    IID = {
+    };
+    for (var a in G.sprites) {
+        var e = G.sprites[a];
+        if (e.skip) {
+            continue
+        }
+        var c = 4,
+            g = 'full';
+        if (e.type == 'animation') {
+            c = 1,
+                g = 'animation'
+        }
+        var h = e.matrix;
+        var b = e.width || 312,
+            k = e.height || 288;
+        if (e.columns != 4 || e.rows != 2) {
+            continue
+        }
+        for (var f = 0; f &lt; h.length; f++) {
+            for (var d = 0; d &lt; h[f].length; d++) {
+                if (!h[f][d]) {
+                    continue
+                }
+                IID[h[f][d]] = [
+                    b,
+                    k,
+                    d * b / e.columns,
+                    f * k / e.rows,
+                    b / (e.columns * 3),
+                    k / (e.rows * 4),
+                    e.file
+                ]
+            }
+        }
+    }
+    for (var a in IID) {
+        for (var d = 0; d &lt; IID[a].length - 1; d++) {
+            IID[a][d] *= 1.5
+        }
+    }
+}
+function character_image(a) {
+    try {
+        precompute_image_positions();
+        if (!IID[a]) {
+            a = 'tf_template'
+        }
+        return '&lt;div style=\'display: inline-block; width: ' + IID[a][4] + 'px; height: ' + IID[a][5] + 'px; overflow: hidden\'>&lt;img style=\'margin-left: ' + ( - IID[a][2] - IID[a][4]) + 'px; margin-top: ' + ( - IID[a][3]) + 'px; width: ' + IID[a][0] + 'px; height: ' + IID[a][1] + 'px;\' src=\'' + IID[a][6] + '\'/>&lt;/div>'
+    } catch (b) {
+        console.log(b)
+    }
+    return ''
+}
+function load_class_info(a, c) {
+    if (!a) {
+        a = window.chartype
+    }
+    if (!c) {
+        c = 'male'
+    }
+    var b = '';
+    if (window.gendertype) {
+        c = gendertype
+    }
+    if (a == 'warrior') {
+        if (c == 'male') {
+            b += '&lt;div style=\'float: left; margin-right: 10px; margin-top: -10px; width: 52px; height: 72px; overflow: hidden\'>&lt;img style=\'margin-left: -' + (52 * 1) + 'px; width: 624px; height: 576px;\' src=\'/images/tiles/characters/custom1.png\'/>&lt;/div>'
+        } else {
+            b += '&lt;div style=\'float: left; margin-right: 10px; margin-top: -10px; width: 52px; height: 72px; overflow: hidden\'>&lt;img style=\'margin-top: -' + (72 * 4) + 'px; margin-left: -' + (52 * 4) + 'px; width: 624px; height: 576px;\' src=\'/images/tiles/characters/chara7.png\'/>&lt;/div>'
+        }
+        b += '&lt;div>&lt;span style=\'color: white\'>Class:&lt;/span> &lt;span style=\'color: ' + colors[c] + '\'>Warrior&lt;/span>&lt;/div>';
+        b += '&lt;div>&lt;span style=\'color: white\'>Primary Attribute:&lt;/span> &lt;span style=\'color: ' + colors.str + '\'>Strength&lt;/span>&lt;/div>';
+        b += '&lt;div>&lt;span style=\'color: white\'>Description:&lt;/span> &lt;span style=\'color: gray\'>Warriors are strong melee characters. Ideal for both PVE and PVP. Can\'t go wrong with a warrior.&lt;/span>&lt;/div>'
+    } else {
+        if (a == 'mage') {
+            if (c == 'female') {
+                b += '&lt;div style=\'float: left; margin-right: 10px; margin-top: -10px; width: 52px; height: 72px; overflow: hidden\'>&lt;img style=\'width: 624px; height: 576px; margin-left: -' + (52 * 7) + 'px\' src=\'/images/tiles/characters/chara7.png\'/>&lt;/div>'
+            } else {
+                b += '&lt;div style=\'float: left; margin-right: 10px; margin-top: -10px; width: 52px; height: 72px; overflow: hidden\'>&lt;img style=\'margin-top: -' + (72 * 4) + 'px; margin-left: -' + (52 * 7) + 'px; width: 624px; height: 576px;\' src=\'/images/tiles/characters/custom1.png\'/>&lt;/div>'
+            }
+            b += '&lt;div>&lt;span style=\'color: white\'>Class:&lt;/span> &lt;span style=\'color: ' + colors[c] + '\'>Mage&lt;/span>&lt;/div>';
+            b += '&lt;div>&lt;span style=\'color: white\'>Primary Attribute:&lt;/span> &lt;span style=\'color: ' + colors['int'] + '\'>Intelligence&lt;/span>&lt;/div>';
+            b += '&lt;div>&lt;span style=\'color: white\'>Description:&lt;/span> &lt;span style=\'color: gray\'>Mage\'s are the ideal characters for beginners. They are easy and fun to play. Both PVE and PVP.&lt;/span>&lt;/div>'
+        } else {
+            if (a == 'priest') {
+                if (c == 'male') {
+                    b += '&lt;div style=\'float: left; margin-right: 10px; margin-top: -10px; width: 52px; height: 72px; overflow: hidden\'>&lt;img style=\'margin-top: -' + (72 * 4) + 'px; margin-left: -' + (52 * 4) + 'px; width: 624px; height: 576px;\' src=\'/images/tiles/characters/chara5.png\'/>&lt;/div>'
+                } else {
+                    b += '&lt;div style=\'float: left; margin-right: 10px; margin-top: -10px; width: 52px; height: 72px; overflow: hidden\'>&lt;img style=\'margin-left: -' + (52 * 7) + 'px; width: 624px; height: 576px;\' src=\'/images/tiles/characters/custom1.png\'/>&lt;/div>'
+                }
+                b += '&lt;div>&lt;span style=\'color: white\'>Class:&lt;/span> &lt;span style=\'color: ' + colors[c] + '\'>Priest&lt;/span>&lt;/div>';
+                b += '&lt;div>&lt;span style=\'color: white\'>Primary Attribute:&lt;/span> &lt;span style=\'color: ' + colors['int'] + '\'>Intelligence&lt;/span>&lt;/div>';
+                b += '&lt;div>&lt;span style=\'color: white\'>Description:&lt;/span> &lt;span style=\'color: gray\'>Priest\'s are the healers of the realm. They are not ideal for beginners or solo players. They can\'t inflict a lot of damage. However, thanks to their Curse ability, they might even bring down a strong warrior in PVP. Every serious party needs at least one priest.&lt;/span>&lt;/div>'
+            } else {
+                if (a == 'rogue') {
+                    if (c == 'male') {
+                        b += '&lt;div style=\'float: left; margin-right: 10px; margin-top: -10px; width: 52px; height: 72px; overflow: hidden\'>&lt;img style=\'margin-top: -' + (72 * 4) + 'px; margin-left: -' + (52 * 7) + 'px; width: 624px; height: 576px;\' src=\'/images/tiles/characters/chara6.png\'/>&lt;/div>'
+                    } else {
+                        b += '&lt;div style=\'float: left; margin-right: 10px; margin-top: -10px; width: 52px; height: 72px; overflow: hidden\'>&lt;img style=\'margin-top: -' + (72 * 4) + 'px; margin-left: -' + (52 * 7) + 'px; width: 624px; height: 576px;\' src=\'/images/tiles/characters/chara3.png\'/>&lt;/div>'
+                    }
+                    b += '&lt;div>&lt;span style=\'color: white\'>Class:&lt;/span> &lt;span style=\'color: ' + colors[c] + '\'>Rogue&lt;/span>&lt;/div>';
+                    b += '&lt;div>&lt;span style=\'color: white\'>Primary Attribute:&lt;/span> &lt;span style=\'color: ' + colors.dex + '\'>Dexterity&lt;/span>&lt;/div>';
+                    b += '&lt;div>&lt;span style=\'color: white\'>Description:&lt;/span> &lt;span style=\'color: gray\'>Rogue\'s are the ideal assassins. Their invis ability makes them super-fun for PVP. They are fast. Not ideal for beginners.&lt;/span>&lt;/div>'
+                } else {
+                    if (a == 'ranger') {
+                        if (c == 'male') {
+                            b += '&lt;div style=\'float: left; margin-right: 10px; margin-top: -10px; width: 52px; height: 72px; overflow: hidden\'>&lt;img style=\'margin-left: -' + (52 * 4) + 'px; width: 624px; height: 576px;\' src=\'/images/tiles/characters/custom1.png\'/>&lt;/div>'
+                        } else {
+                            b += '&lt;div style=\'float: left; margin-right: 10px; margin-top: -10px; width: 52px; height: 72px; overflow: hidden\'>&lt;img style=\'margin-left: -' + (52 * 7) + 'px; width: 624px; height: 576px;\' src=\'/images/tiles/characters/chara3.png\'/>&lt;/div>'
+                        }
+                        b += '&lt;div>&lt;span style=\'color: white\'>Class:&lt;/span> &lt;span style=\'color: ' + colors[c] + '\'>Ranger&lt;/span>&lt;/div>';
+                        b += '&lt;div>&lt;span style=\'color: white\'>Primary Attribute:&lt;/span> &lt;span style=\'color: ' + colors.dex + '\'>Dexterity&lt;/span>&lt;/div>';
+                        b += '&lt;div>&lt;span style=\'color: white\'>Description:&lt;/span> &lt;span style=\'color: gray\'>Rangers are for the most advanced players. They are mainly archers. Early on they are very weak and hard to play. But a strong ranger can probably rule all other classes. +Work in progress!&lt;/span>&lt;/div>'
+                    } else {
+                        if (a == 'merchant') {
+                            if (c == 'male') {
+                                b += '&lt;div style=\'float: left; margin-right: 10px; margin-top: -10px; width: 52px; height: 72px; overflow: hidden\'>&lt;img style=\'margin-left: -' + (52 * 7) + 'px; width: 624px; height: 576px;\' src=\'/images/tiles/characters/npc5.png\'/>&lt;/div>'
+                            } else {
+                                b += '&lt;div style=\'float: left; margin-right: 10px; margin-top: -10px; width: 52px; height: 72px; overflow: hidden\'>&lt;img style=\'margin-left: -' + (52 * 4) + 'px; width: 624px; height: 576px;\' src=\'/images/tiles/characters/npc6.png\'/>&lt;/div>'
+                            }
+                            b += '&lt;div>&lt;span style=\'color: white\'>Class:&lt;/span> &lt;span style=\'color: ' + colors[c] + '\'>Merchant&lt;/span>&lt;/div>';
+                            b += '&lt;div>&lt;span style=\'color: white\'>Primary Attribute:&lt;/span> &lt;span style=\'color: #804000\'>None&lt;/span>&lt;/div>';
+                            b += '&lt;div>&lt;span style=\'color: white\'>Description:&lt;/span> &lt;span style=\'color: gray\'>While your main characters are out there adventuring, merchants can wait in town and market your loots. Server and character limits don\'t apply to merchants. They gain experience when they sell or buy something.&lt;/span>&lt;/div>'
+                        } else {
+                            return
+                        }
+                    }
+                }
+            }
+        }
+    }
+    $('#features').css('height', 208).html(b)
+};
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Character.html">Character</a></li><li><a href="Monster.html">Monster</a></li><li><a href="PIXI.Sprite.html">Sprite</a></li><li><a href="Player.html">Player</a></li></ul><h3>Global</h3><ul><li><a href="global.html#accept_party_invite">accept_party_invite</a></li><li><a href="global.html#accept_party_request">accept_party_request</a></li><li><a href="global.html#activate">activate</a></li><li><a href="global.html#attack">attack</a></li><li><a href="global.html#bfs">bfs</a></li><li><a href="global.html#buy">buy</a></li><li><a href="global.html#can_attack">can_attack</a></li><li><a href="global.html#can_heal">can_heal</a></li><li><a href="global.html#can_move_to">can_move_to</a></li><li><a href="global.html#can_use">can_use</a></li><li><a href="global.html#change_target">change_target</a></li><li><a href="global.html#clear_drawings">clear_drawings</a></li><li><a href="global.html#compound">compound</a></li><li><a href="global.html#continue_pathfinding">continue_pathfinding</a></li><li><a href="global.html#destroy_item">destroy_item</a></li><li><a href="global.html#draw_circle">draw_circle</a></li><li><a href="global.html#draw_line">draw_line</a></li><li><a href="global.html#equip">equip</a></li><li><a href="global.html#game_log">game_log</a></li><li><a href="global.html#get_map">get_map</a></li><li><a href="global.html#get_nearest_hostile">get_nearest_hostile</a></li><li><a href="global.html#get_nearest_monster">get_nearest_monster</a></li><li><a href="global.html#get_player">get_player</a></li><li><a href="global.html#get_socket">get_socket</a></li><li><a href="global.html#get_target">get_target</a></li><li><a href="global.html#get_target_of">get_target_of</a></li><li><a href="global.html#get_targeted_monster">get_targeted_monster</a></li><li><a href="global.html#handle_command">handle_command</a></li><li><a href="global.html#handle_death">handle_death</a></li><li><a href="global.html#heal">heal</a></li><li><a href="global.html#in_attack_range">in_attack_range</a></li><li><a href="global.html#is_moving">is_moving</a></li><li><a href="global.html#is_transporting">is_transporting</a></li><li><a href="global.html#item_grade">item_grade</a></li><li><a href="global.html#item_properties">item_properties</a></li><li><a href="global.html#item_value">item_value</a></li><li><a href="global.html#load_code">load_code</a></li><li><a href="global.html#loot">loot</a></li><li><a href="global.html#move">move</a></li><li><a href="global.html#mssince">mssince</a></li><li><a href="global.html#on_cm">on_cm</a></li><li><a href="global.html#on_combined_damage">on_combined_damage</a></li><li><a href="global.html#on_destroy">on_destroy</a></li><li><a href="global.html#on_disappear">on_disappear</a></li><li><a href="global.html#on_draw">on_draw</a></li><li><a href="global.html#on_party_invite">on_party_invite</a></li><li><a href="global.html#on_party_request">on_party_request</a></li><li><a href="global.html#respawn">respawn</a></li><li><a href="global.html#say">say</a></li><li><a href="global.html#sell">sell</a></li><li><a href="global.html#send_cm">send_cm</a></li><li><a href="global.html#send_gold">send_gold</a></li><li><a href="global.html#send_item">send_item</a></li><li><a href="global.html#send_party_invite">send_party_invite</a></li><li><a href="global.html#send_party_request">send_party_request</a></li><li><a href="global.html#set_message">set_message</a></li><li><a href="global.html#shift">shift</a></li><li><a href="global.html#show_json">show_json</a></li><li><a href="global.html#smart_move">smart_move</a></li><li><a href="global.html#smart_move_logic">smart_move_logic</a></li><li><a href="global.html#smooth_path">smooth_path</a></li><li><a href="global.html#start_pathfinding">start_pathfinding</a></li><li><a href="global.html#stop">stop</a></li><li><a href="global.html#trade">trade</a></li><li><a href="global.html#trade_buy">trade_buy</a></li><li><a href="global.html#u_item">u_item</a></li><li><a href="global.html#upgrade">upgrade</a></li><li><a href="global.html#use">use</a></li><li><a href="global.html#use_hp_or_mp">use_hp_or_mp</a></li><li><a href="global.html#use_skill">use_skill</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 14 2017 10:01:49 GMT+0200 (CEST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
