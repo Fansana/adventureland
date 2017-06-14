@@ -229,7 +229,7 @@ function can_heal(target) {
 }
 
 /**
- *
+ * return true if the entity is moving
  * @param {Player|Character|Monster} entity
  * @returns {boolean}
  */
@@ -241,7 +241,7 @@ function is_moving(entity) {
 
 /**
  * Is the entity using the town teleportation skill
- * @param entity
+ * @param entity {Player|Character|Monster}
  * @returns {boolean}
  */
 function is_transporting(entity) {
@@ -298,20 +298,25 @@ function sell(num, quantity) //sell an item from character.items by it's order -
 }
 /**
  * Equips the Item in the num-th inventory Slot starting from 0.
- * @param {number} num
+ * @param {number} num - The slot the items is currently in
  */
 function equip(num) {
     parent.socket.emit("equip", {num: num});
 }
-
+/**
+ * Puts an item up for sale
+ * @param {number} num      - The slot the item is in
+ * @param {number} trade_slot   - The slot in the trade window where is shoudl appear
+ * @param {number} price    - The price of the item
+ */
 function trade(num, trade_slot, price) // where trade_slot is 1 to 16 - example, trade(0,4,1000) puts the first item in inventory to the 4th trade slot for 1000 gold [27/10/16]
 {
     parent.trade("trade" + trade_slot, num, price);
 }
 /**
  *
- * @param {Player} target
- * @param {number} trade_slot
+ * @param {Player} target     - The player entity you want to buy from.
+ * @param {number} trade_slot - The trade slot in which the item is you want to buy.
  */
 function trade_buy(target, trade_slot) // target needs to be an actual player
 {
@@ -319,10 +324,10 @@ function trade_buy(target, trade_slot) // target needs to be an actual player
 }
 
 /**
- *
- * @param {number} item_num
- * @param {number} scroll_num
- * @param {number} [offering_num]
+ * Uses the upgrade npc to upgrade items.
+ * @param {number} item_num - Slot number of the item you want to upgrade.
+ * @param {number} scroll_num - Slot number of the scroll you want to upgrade
+ * @param {number} [offering_num] - Slot number of the offering you want to use
  */
 function upgrade(item_num, scroll_num, offering_num) //number of the item and scroll on the show_json(character.items) array - 0 to N-1
 {
@@ -335,6 +340,7 @@ function upgrade(item_num, scroll_num, offering_num) //number of the item and sc
  * Uses the upgrade npc to combine jewelery
  * Combining works by taking 3 jewelery items of the same type and a scroll
  * for example -> compound(0,1,2,6) -> 3 items in the first 3 slots, scroll at the 6th spot
+ * On the normal Server you have to be close to the npc for it to work.
  * @param {number} item0 - Item one
  * @param {number} item1 - Item two
  * @param {number} item2 - Item three
@@ -367,8 +373,8 @@ function say(message) // please use responsibly, thank you! :)
 
 /**
  * sets the character moving to specific coordinates
- * @param {number} x
- * @param {number} y
+ * @param {number} x - X coordinate
+ * @param {number} y - Y coordinate
  */
 function move(x, y) {
     if (!can_walk(character)) return;
@@ -398,7 +404,7 @@ function show_json(e) // renders the object as json inside the game
 /**
  *
  * @param {String} name - The name of the character
- * @returns {Player} - The Player Object
+ * @returns {Player} - Returns the Player Object
  */
 function get_player(name) // returns the player by name, if the player is within the vision area
 {
@@ -408,13 +414,13 @@ function get_player(name) // returns the player by name, if the player is within
     return target;
 }
 /**
- *
+ * Get nearest Monster out of the entities array that meets certain criteria and returns it.
  * @param {Object} args
- * @param {string} args.type the monster type of {@link Monster}
- * @param {number} args.min_xp Minimum xp that the Monster should give
- * @param {number} args.max_att The Maximum attack value a Monster should have
- * @param {boolean} args.no_target Attack only targets that have no target
- * @param {boolean} args.path_check Check If you can walk straight to the target
+ * @param {string} args.type        - the monster type of {@link Monster}
+ * @param {number} args.min_xp      - Minimum xp that the Monster should give
+ * @param {number} args.max_att     - The Maximum attack value a Monster should have
+ * @param {boolean} args.no_target  - Attack only targets that have no target
+ * @param {boolean} args.path_check - Check If you can walk straight to the target
  * @returns {Monster}
  */
 function get_nearest_monster(args) {
@@ -448,7 +454,7 @@ function get_nearest_monster(args) {
  *
  * @param {Object} args
  * @param {Array.<string>} [args.exclude] A list of Player names which will not be considered hostile
- * @param {boolean} [args.friendship=true] Should friends be considered not hostile
+ * @param {boolean} [args.friendship=true] Should friends be considered friendly
  * @returns {Player}
  */
 function get_nearest_hostile(args) // mainly as an example [08/02/17]
@@ -487,7 +493,7 @@ function use_hp_or_mp() {
     if (used) last_potion = new Date();
 }
 /**
- * Looks for chests and tries to open them
+ * Find the first 2 chests and opens them
  */
 function loot() {
     var looted = 0;
@@ -506,7 +512,7 @@ function loot() {
 /**
  * Send gold to another player
  * @param {Player|string} receiver - Either a character name or a OtherCharacter Object
- * @param {number} gold
+ * @param {number} gold - The amount of gold to send
  */
 function send_gold(receiver, gold) {
     if (!receiver) return game_log("No receiver sent to send_gold");
@@ -516,9 +522,9 @@ function send_gold(receiver, gold) {
 
 /**
  * Send item to another player
- * @param {Player|string} receiver - Either a character name or a OtherCharacter Object
+ * @param {Player|string} receiver         - Either a character name or a OtherCharacter Object
  * @param {number} num                     - Inventory slot starting from 0
- * @param {number} [quantity=1]                - Quantity
+ * @param {number} [quantity=1]            - Quantity
  */
 function send_item(receiver, num, quantity) {
     if (!receiver) return game_log("No receiver sent to send_item");
@@ -527,8 +533,8 @@ function send_item(receiver, num, quantity) {
 }
 
 /**
- * Destorys an item in the num-th Inventory slot
- * @param {number} num
+ * Destroys an item in the num-th Inventory slot
+ * @param {number} num - The Inventory slot of the Item [0,41].
  */
 function destroy_item(num) // num: 0 to 41
 {
@@ -571,7 +577,7 @@ function accept_party_request(name) {
 }
 
 /**
- * Lets the player respawn
+ * Lets the character respawn
  */
 function respawn() {
     parent.socket.emit('respawn');
@@ -590,9 +596,9 @@ function handle_death() {
     return -1;
 }
 /**
- *
- * @param command
- * @param args
+ * You can implement your own chat commands with this function.
+ * @param command {string}
+ * @param args {string}
  * @returns {number}
  */
 function handle_command(command, args) // command's are things like "/party" that are entered through Chat - args is a string
@@ -621,7 +627,7 @@ function on_cm(name, data) {
 }
 /**
  * This function gets called whenever an entity disappears
- * @param {Player|Monster}entity
+ * @param {Player|Monster} entity
  * @param data
  */
 function on_disappear(entity, data) {
@@ -652,7 +658,8 @@ function on_party_request(name)
     // accept_party_request(name)
 }
 /**
- * Called just before the CODE is destroyed
+ * Called just before the CODE is destroyed.
+ * Can be used to remove event listeners or revert states.
  */
 function on_destroy()
 {
@@ -666,8 +673,10 @@ function on_draw()
 
 }
 /**
+ * Override this function to listen for game events
  * @callback 
- * @param event
+ * @param event {Object}
+ * @param event.name {string} name of the event e.g. pinkgoo or goblin.
  */
 function on_game_event(event) {
     if (event.name == "pinkgoo") {
@@ -683,12 +692,12 @@ var drawings = parent.drawings;
 /**
  * Documentation: [https://pixijs.github.io/docs/PIXI.Graphics.html]{@link https://pixijs.github.io/docs/PIXI.Graphics.html}
  * keep in mind that drawings could significantly slow redraws, especially if you don't .destroy() them
- * @param x
- * @param y
- * @param x2
- * @param y2
- * @param size
- * @param color
+ * @param x {number}
+ * @param y {number}
+ * @param x2 {number}
+ * @param y2 {number}
+ * @param size {number}
+ * @param color {color}
  * @returns {PIXI.Graphics} [https://pixijs.github.io/docs/PIXI.Graphics.html]{@link https://pixijs.github.io/docs/PIXI.Graphics.html}
  */
 
@@ -708,11 +717,11 @@ function draw_line(x, y, x2, y2, size, color) {
 /**
  * Documentation: [https://pixijs.github.io/docs/PIXI.Graphics.html]{@link https://pixijs.github.io/docs/PIXI.Graphics.html}
  * Example: draw_circle(character.real_x,character.real_y,character.range) :) [22/10/16]
- * @param x
- * @param y
- * @param radius
- * @param size
- * @param color
+ * @param x {number}
+ * @param y {number}
+ * @param radius {number}
+ * @param size {number}
+ * @param color {color}
  * @returns {PIXI.Graphics}
  */
 
@@ -727,7 +736,7 @@ function draw_circle(x, y, radius, size, color) {
     return e;
 }
 /**
- *  Clears drawings on the screen.
+ *  Clears drawings added with draw_circle and draw_line functions from the screen.
  */
 function clear_drawings() {
     drawings.forEach(function (e) {
@@ -831,7 +840,7 @@ var smart = {
  * @param {string} destination.map -  Destination map
  * @param {number} destination.x - Destination coordinates
  * @param {number} destination.y - Destination coordinates
- * @param on_done
+ * @param {function} on_done -  Function that gets executed once the path finding finishes.
  */
 function smart_move(destination, on_done)
 {
@@ -903,6 +912,7 @@ function smart_move(destination, on_done)
         };
     console.log(smart.map + " " + smart.x + " " + smart.y);
 }
+
 /**
  * Stop path finding and moving
  */
@@ -931,6 +941,9 @@ function qpush(node) {
 }
 /**
  * Internal smart_move function
+ * Assume the path ahead is [i] [i+1] [i+2] - This routine checks whether [i+1] could be skipped
+ * The resulting path is smooth rather than rectangular and bumpy
+ * Try adding "function smooth_path(){}" or "smart.prune.smooth=false;" to your Code
  */
 function smooth_path() {
     var i = 0, j;
@@ -950,6 +963,7 @@ function smooth_path() {
         i++;
     }
 }
+
 /**
  * Internal smart_move function
  */
@@ -1040,6 +1054,7 @@ function bfs() {
         parent.d_text("Yes!", character, {color: "#58D685"});
     }
 }
+
 /**
  * Internal smart_move function
  */
@@ -1050,12 +1065,14 @@ function start_pathfinding() {
     game_log("Searching for a path...", "#89D4A2");
     bfs();
 }
+
 /**
  * Internal smart_move function
  */
 function continue_pathfinding() {
     bfs();
 }
+
 /**
  * Internal smart_move function
  */
