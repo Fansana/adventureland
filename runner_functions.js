@@ -65,7 +65,7 @@ function use_skill(name, target) {
 
 /**
  * Returns an object containing all the stat properties of an item
- * @param {Gear} item               - The Item in question
+ * @param {Gear} item             - The Item in question
  * @returns {ItemStats|null}      - An Object containing all stats and there number or null on error
  */
 function item_properties(item) // example: item_properties(character.items[0])
@@ -134,8 +134,8 @@ function game_log(message, color) {
 }
 /**
  * Returns Entity which the Entity is targeting
- * @param {Monster} entity
- * @returns {Monster|null}
+ * @param {Monster} entity The Entity of which to fetch the target
+ * @returns {Monster|null} the target entity or null if the entity has no target
  */
 function get_target_of(entity) // .target is a Name for Monsters and `id` for Players - this function return whatever the entity in question is targeting
 {
@@ -168,7 +168,7 @@ function get_targeted_monster() {
 
 /**
  * Change the targeted entity
- * @param {Monster} target
+ * @param {Monster} target the new target
  * @param {boolean} [send=false] - send change target to server
  */
 function change_target(target, send) {
@@ -185,9 +185,10 @@ function change_target(target, send) {
 /**
  * Checks if there is a clear path to the coordinates or the entity.
  * For an entity you don't have to supply the second argument
- * @param {Monster|Player|number} x
- * @param {number} [y]
- * @returns {boolean}
+ * @param {Monster|Player|number} x This can be either be a number or an entity. When this is an entity the function will check if there is a clear path to that entity.
+ * When this a number the function also expects the y coordinate to be given.
+ * @param {number} [y] The y coordinate of the position
+ * @returns {boolean} Whether or not there is a clear path the the coordinates
  */
 function can_move_to(x,y)
 {
@@ -197,8 +198,8 @@ function can_move_to(x,y)
 
 /**
  * Checks if the Entity is in attack range
- * @param {Player|Monster} target
- * @returns {boolean}
+ * @param {Player|Monster} target The entity to check
+ * @returns {boolean} True if the entity is in range
  */
 function in_attack_range(target) // also works for priests/heal
 {
@@ -209,7 +210,7 @@ function in_attack_range(target) // also works for priests/heal
 /**
  * Checks if the character is able to attack the target
  * @param {Monster|Player} target - the Entity for which to check
- * @returns {boolean}
+ * @returns {boolean} True if the entity can be attacked
  */
 function can_attack(target) // also works for priests/heal
 {
@@ -222,7 +223,7 @@ function can_attack(target) // also works for priests/heal
  * Checks if the character is able to heal the target
  * Same as can_attack but with a more intuitive name
  * @param {Monster|Player} target - the Entity for which to check
- * @returns {boolean}
+ * @returns {boolean} True if the target can be healed
  */
 function can_heal(target) {
     return can_attack(target);
@@ -230,8 +231,8 @@ function can_heal(target) {
 
 /**
  * return true if the entity is moving
- * @param {Player|Character|Monster} entity
- * @returns {boolean}
+ * @param {Player|Character|Monster} entity The entity in question
+ * @returns {boolean} True if the entity is moving
  */
 function is_moving(entity) {
     if (entity.me && smart.moving) return true;
@@ -241,8 +242,8 @@ function is_moving(entity) {
 
 /**
  * Is the entity using the town teleportation skill
- * @param entity {Player|Character|Monster}
- * @returns {boolean}
+ * @param entity {Player|Character|Monster} The entity in question
+ * @returns {boolean} True if the entity using the teleport skill
  */
 function is_transporting(entity) {
     if (entity.c.town) return true;
@@ -267,7 +268,7 @@ function attack(target) {
 
 /**
  * Tries to heal the targeted Character
- * @param {Player} target
+ * @param {Player} target The target to heal
  */
 function heal(target) {
     if (safeties && mssince(last_attack) < 400) return;
@@ -279,7 +280,7 @@ function heal(target) {
     last_attack = new Date();
 }
 /**
- * Buys items from NPC. The NPC has to be near enough to be able to buy from him.
+ * Buys items from NPC. The NPC has to be near enough to be able to buy from him. Usually 400px
  * @param {String} name      - Name of the Item
  * @param {number} quantity  - Quantity
  */
@@ -288,7 +289,7 @@ function buy(name, quantity) //item names can be spotted from show_json(characte
     parent.buy(name, quantity);
 }
 /**
- * Sell the Item in the num-th inventory slot starting from 0.
+ * Tries to sell the Item in the num-th inventory slot to an npc.
  * @param {number} num       - Inventory slot
  * @param {number} quantity  - Quantity
  */
@@ -306,7 +307,7 @@ function equip(num) {
 /**
  * Puts an item up for sale
  * @param {number} num      - The slot the item is in
- * @param {number} trade_slot   - The slot in the trade window where is shoudl appear
+ * @param {number} trade_slot   - The slot in the trade window where is should appear
  * @param {number} price    - The price of the item
  */
 function trade(num, trade_slot, price) // where trade_slot is 1 to 16 - example, trade(0,4,1000) puts the first item in inventory to the 4th trade slot for 1000 gold [27/10/16]
@@ -355,7 +356,10 @@ function compound(item0, item1, item2, scroll_num, offering_num) // for example 
     parent.c_offering = offering_num;
     parent.compound();
 }
-
+/**
+ * Tries to exchange an item in a specific inventory slot. This function also works with quest items and when multiple items are exchanged at once e.g. seashells.
+ * @param {number} item_num - Inventory slot
+ */
 function exchange(item_num) {
     parent.e_item = item_num;
     parent.exchange(1);
@@ -364,7 +368,7 @@ function exchange(item_num) {
 /**
  * Acts as if the player had typed the message into the chat and then send it.
  * This also allows for the use of commands.
- * @param {string} message - The message
+ * @param {string} message - The message to send
  */
 function say(message) // please use responsibly, thank you! :)
 {
@@ -372,7 +376,7 @@ function say(message) // please use responsibly, thank you! :)
 }
 
 /**
- * sets the character moving to specific coordinates
+ * Sets the character moving to specific coordinates, before using this you should check if you can actually walk to your target or else you might end up somewhere else.
  * @param {number} x - X coordinate
  * @param {number} y - Y coordinate
  */
@@ -402,7 +406,7 @@ function show_json(e) // renders the object as json inside the game
     parent.show_json(parent.game_stringify(e, 2));
 }
 /**
- *
+ * Returns the entity of a player, only works when the player is visible.
  * @param {String} name - The name of the character
  * @returns {Player} - Returns the Player Object
  */
@@ -451,9 +455,9 @@ function get_nearest_monster(args) {
     return target;
 }
 /**
- *
+ * Get nearest Hostile. This function is manly for finding hostile players in your proximity
  * @param {Object} args
- * @param {Array.<string>} [args.exclude] A list of Player names which will not be considered hostile
+ * @param {Array.<string>} [args.exclude] An array of Player names which will not be considered hostile
  * @param {boolean} [args.friendship=true] Should friends be considered friendly
  * @returns {Player}
  */
@@ -553,6 +557,7 @@ function send_party_invite(name, is_request) // name could be a player object, n
 }
 
 /**
+ * @module group management
  * Request to be invited into a party
  * @param {Player|string} name   - name ca be a player object, a player name, or an id
  */
@@ -561,6 +566,7 @@ function send_party_request(name) {
 }
 
 /**
+ * @module group management
  * Accept party invite from player
  * @param {string} name
  */
@@ -569,6 +575,7 @@ function accept_party_invite(name) {
 }
 
 /**
+ * @module group management
  * Accept party request from player.
  * @param {string} name
  */
@@ -584,6 +591,7 @@ function respawn() {
 }
 
 /**
+ * @module callback
  * When a character dies, character.rip is true, you can override handle_death and manually respawn
  * IDEA: A Resident PVP-Dweller, with an evasive Code + irregular respawning
  * respawn current has a 12 second cooldown, best wait 15 seconds before respawning [24/11/16]
@@ -596,6 +604,7 @@ function handle_death() {
     return -1;
 }
 /**
+ * @module callback
  * You can implement your own chat commands with this function.
  * @param command {string}
  * @param args {string}
@@ -608,6 +617,7 @@ function handle_command(command, args) // command's are things like "/party" tha
     return -1;
 }
 /**
+ *
  * Send CODE messages to the characters, of course it only works if both characters have CODE active.
  * @param {Array|string} to - Either an Array of names or just a name
  * @param {Object} data     - The data to be sent in object form
@@ -618,7 +628,7 @@ function send_cm(to, data) {
     parent.send_code_message(to, data);
 }
 /**
- *
+ * @module callback
  * @param {string} name - Sender of Code Message
  * @param {Object} data - An Object containing the information send
  */
@@ -626,6 +636,7 @@ function on_cm(name, data) {
     game_log("Received a code message from: " + name);
 }
 /**
+ * @module callback
  * This function gets called whenever an entity disappears
  * @param {Player|Monster} entity
  * @param data
@@ -634,6 +645,7 @@ function on_disappear(entity, data) {
     // game_log("disappear: "+entity.id+" "+JSON.stringify(data));
 }
 /**
+ * @module callback
  * When multiple characters stay in the same spot, they receive combined damage, this function gets called whenever a monster deals combined damage.
  * Override this function in CODE to react to it
  */
@@ -642,6 +654,7 @@ function on_combined_damage()
     // move(character.real_x+5,character.real_y);
 }
 /**
+ * @module callback
  * Someone is inviting you to a party
  * @param {string} name - The name of the inviting player
  */
@@ -650,6 +663,7 @@ function on_party_invite(name) // called by the inviter's name
     // accept_party_invite(name)
 }
 /**
+ * @module callbacks
  * Someone requesting to join your existing party
  * @param {string} name  - The name of the player
  */
@@ -658,6 +672,7 @@ function on_party_request(name)
     // accept_party_request(name)
 }
 /**
+ * @module callbacks
  * Called just before the CODE is destroyed.
  * Can be used to remove event listeners or revert states.
  */
@@ -666,6 +681,7 @@ function on_destroy()
     clear_drawings();
 }
 /**
+ * @module callbacks
  * The game calls this function at the best place in each game draw frame, so if you are playing the game at 60fps, this function gets called 60 times per second
  */
 function on_draw()
@@ -673,6 +689,7 @@ function on_draw()
 
 }
 /**
+ * @module callback
  * Override this function to listen for game events
  * @callback 
  * @param event {Object}
@@ -690,6 +707,7 @@ function on_game_event(event) {
 var PIXI = parent.PIXI; // for drawing stuff into the game
 var drawings = parent.drawings;
 /**
+ * @module graphics
  * Documentation: [https://pixijs.github.io/docs/PIXI.Graphics.html]{@link https://pixijs.github.io/docs/PIXI.Graphics.html}
  * keep in mind that drawings could significantly slow redraws, especially if you don't .destroy() them
  * @param x {number}
@@ -715,6 +733,7 @@ function draw_line(x, y, x2, y2, size, color) {
     return e;
 }
 /**
+ * @module graphics
  * Documentation: [https://pixijs.github.io/docs/PIXI.Graphics.html]{@link https://pixijs.github.io/docs/PIXI.Graphics.html}
  * Example: draw_circle(character.real_x,character.real_y,character.range) :) [22/10/16]
  * @param x {number}
@@ -736,6 +755,7 @@ function draw_circle(x, y, radius, size, color) {
     return e;
 }
 /**
+ * @module graphics
  *  Clears drawings added with draw_circle and draw_line functions from the screen.
  */
 function clear_drawings() {
@@ -828,6 +848,7 @@ var smart = {
     flags: {}
 };
 /**
+ * @module path_finding
  * smart_move uses a Breadth-first search path finding algorithm to find the shortest path
  * despite the name, smart_move isn't very smart or efficient, it's up to the players to
  * implement a better movement method.
@@ -914,6 +935,7 @@ function smart_move(destination, on_done)
 }
 
 /**
+ * @module path_finding
  * Stop path finding and moving
  */
 function stop() {
@@ -924,13 +946,19 @@ function stop() {
 
 var queue = [], visited = {}, start = 0, best = null;
 var moves = [[0, 15], [0, -15], [15, 0], [-15, 0]];
-
+/**
+ * @module path_finding
+ * @param index
+ */
 function plot(index) {
     if (index == -1) return;
     plot(queue[index].i); // Recursively back-tracks the path we came from
     smart.plot.push(queue[index]);
 }
-
+/**
+ * @module path_finding
+ * @param node
+ */
 function qpush(node) {
     // If we haven't visited this location, adds the location to the queue
     if (smart.prune.map && smart.flags.map && node.map != smart.map) return;
@@ -940,6 +968,7 @@ function qpush(node) {
     visited[node.map + "-" + node.x + "-" + node.y] = true;
 }
 /**
+ * @module path_finding
  * Internal smart_move function
  * Assume the path ahead is [i] [i+1] [i+2] - This routine checks whether [i+1] could be skipped
  * The resulting path is smooth rather than rectangular and bumpy
@@ -965,6 +994,7 @@ function smooth_path() {
 }
 
 /**
+ * @module path_finding
  * Internal smart_move function
  */
 function bfs() {
@@ -1056,6 +1086,7 @@ function bfs() {
 }
 
 /**
+ * @module path_finding
  * Internal smart_move function
  */
 function start_pathfinding() {
@@ -1067,6 +1098,7 @@ function start_pathfinding() {
 }
 
 /**
+ * @module path_finding
  * Internal smart_move function
  */
 function continue_pathfinding() {
@@ -1074,6 +1106,7 @@ function continue_pathfinding() {
 }
 
 /**
+ * @module path_finding
  * Internal smart_move function
  */
 function smart_move_logic() {
