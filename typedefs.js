@@ -220,7 +220,7 @@
  * @description Every item may or may not contain any number or combination of these attributes. It is probably a good idea to check if they exist first.
  * @property {number} apiercing  - Subtract this number from target's armor to get the number used in damage calc.
  * @property {number} armor      - Reduces the incoming physical damage by 1% for every 10 armor points.
- * @property {number} damage     - Proportional increase in damage dealth.
+ * @property {number} damage     - Proportional increase in damage dealt.
  * @property {number} attack     - Depreceated.
  * @property {number} attr0      - Reserved for items that are required to use a skill.
  * @property {number} attr1      - Reserved for various items that modify character behavior.
