@@ -1,10 +1,10 @@
-# adventureland
-CODE Documentation for Adventure Land MMORPG http://adventure.land
+# Adventure Land Documentation
+CODE Documentation for Adventure Land MMORPG [Adventure Land](http://adventure.land) .
+Currently maintained by NexusNull.
+This documentation is currently unofficial and unfinished if you find mistakes kindly point them out so I can fix them.
+The source code is property of Kaan Soral.
 
-
-[NexusNull's Unofficial But Awesome Documentation](https://fansana.github.io/adventureland/index.html) [Functions](https://fansana.github.io/adventureland/global.html)
-
-### Character / Players / Monsters
+[NexusNull's Unofficial But Awesome Documentation](https://nexusnull.github.io/adventureland/index.html) [Functions](https://nexusnull.github.io/adventureland/global.html)
 
 * Properties
  * .real_x
@@ -13,29 +13,62 @@ CODE Documentation for Adventure Land MMORPG http://adventure.land
  * .mp / .max_mp
  * .xp / .max_xp
  * .party / .name / .rip / .afk / .code / .target / .id / .moving + more
-* show_json(character) to see all the properties
 
-### Things to Inspect
+### [Character](https://fansana.github.io/adventureland/Character.html)
+^ Click for detailed Info
+* Properties
+ * .real_x (10x of the game's X)
+ * .real_y (10x of the game's Y)
+ * .hp / .max_hp
+ * .mp / .max_mp
+ * .xp / .max_xp
+ * .party / .name / .rip / .afk / .code / .target / .id / .moving + more
 
-Replace everything on CODE with these show_json's
+### [Monster](https://fansana.github.io/adventureland/Monster.html) (Incomplete)
+^ Click for detailed Info
+* Properties
+ * .real_x (10x of the game's X)
+ * .real_y (10x of the game's Y)
+ * .hp / .max_hp
+ * .mp / .max_mp
+ * .xp / .max_xp
+ * .party / .name / .rip / .afk / .code / .target / .id / .moving + more
 
-* `show_json(character)`
-* `show_json(character.items)`
-* `show_json(character.slots)`
-* `show_json(get_target())`
-* `show_json(parent.G.monsters)`
-* `show_json(parent.G.items)`
-* `show_json(parent.G.skills)`
-* `show_json(parent.G.npcs)`
-* `show_json(parent.M)`
+### Game Info
+A very useful information is stored inside of *parent.G* to display it
+
+```javascript
+    show_json(parent.G);
+```
+Here is a list of some children of G and an explanation to them.
+
+* `G.version`
+    - Stores the current Game version
+* `G.character.items`
+    - Stores all items in the game and there attributes
+* `G.levels`
+    - Stores the xp needed to get from one level to the next
+* `G.classes`
+    - Stores information about each player class
+* `G.maps`
+    - Contains every game map
+* `G.monsters`
+    - List of every monster and there attributes, like health experience 
+* `G.skills`
+    - List of all player skills
+* `G.npcs`
+    - Contains a information about all traders 
 
 ### Provided Functions
 
-#### move(character.real_x,character.real_y)
-Moves the character
+
+A more thoroughgoing list can be found [here](https://fansana.github.io/adventureland/index.html). 
+
+#### move( xCoordinates , yCoordinates )
+This will make the character start walking to into the direction of the passed coordinates
 
 #### get_nearest_monster({max_att:100,min_xp:10,target:"Name",no_target:true})
-Return's the nearest monster, you might want to target that return value with `change_target`
+Returns the nearest monster, you might want to target that return value with `change_target`
 
 target: Picks monsters that only target that name
 
@@ -48,7 +81,8 @@ Uses a very basic logic to either use hp or mp pot
 Returns your current target
 
 #### get_target_of(entity)
-New, powerful feature, returns the target entity for both players and monsters
+
+Returns the target entity for both players and monsters
 
 Suggestion for Fun: Code your characters to target and attack what you are targeting, even if you don't engage a monster, you can make your characters (or side-characters) engage by just clicking :)
 
@@ -56,42 +90,42 @@ Suggestion for Fun: Code your characters to target and attack what you are targe
 Targets the player or monster
 
 #### loot()
-Loots the chests on the map
+
+Tries to loot the chests on the map. If there are multiple it will only try to open 2.
 
 #### attack(target)
-Attacks the target
+Attacks the target.
 
 #### heal(target)
-Heals the target
+Heals the target, the target has to be a the character or a player.
 
 #### game_log(message,color)
 Adds a message to game's right log
 
 #### show_json(character.items)
-Renders the argument as json, to inspect, learn, use
+Renders the argument as json, to inspect, learn and use.
 
 #### set_message("Code Active")
-Sets the IFrame message, the one in the right bottom corner
+Sets the IFrame message, the one in the right bottom corner.
 
 #### runner_functions.js
 There are more functions, examples in runner_functions.js and on the game's main CODE
 
-### Future Plans
-As the game progresses, the CODE feature will refine, you will be able to create/save your own code in-game, and hopefully much much more
+### Future Plans for Adventure land
+
+As the game progresses, the CODE feature will refine, you will be able to create/save your own code in-game, and hopefully much much more.
 
 With the introduction of PVP, Trade, Events and similar stuff, the CODE capabilities should get pretty interesting
 
 I'm also planning to add Networking between characters, so one might create a small team of bot helpers, or create a PVP team that consist entirely of bots
 
 ### Usage / Notes
-* You have to keep the browser focused
-* Otherwise browsers slow down the game
-* Opening the game in a new window might be a good idea
-* Keep in mind that CODE is currently an early prototype
-* CODE runs in an IFrame, feel free to interact with **parent**
-* You are free to inspect the client game code
-* You can freely emulate a regular player
-* Please don't use the CODE to hinder other players or the server
-* You should be safe as long as the interval is 250ms
-* Feel free to use Github Issues for Questions
-* Ideally, at each Interval, move, attack, use/buy only once :)
+Using CODE in Adventure land requires that the browser tab is focused, otherwise browser commonly slow down the javascript execution.
+A good solution to this problem is to open a separate Window where to run the game in.
+Follow the rules of the Game to avoid unnecessary punishment.
+Also try not to overload the server with too many actions, running the code in an 1/4 second Interval is good practice.
+Keep in mind that CODE is currently an early prototype and may change at any time.
+If you have questions create an [issue](https://github.com/Fansana/adventureland/issues/new) on github or ask on [Discord](https://discord.gg/hTpwYFJ).
+Most importantly have fun programming.
+
+

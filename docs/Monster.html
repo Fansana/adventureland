@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Class: Monster</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Class: Monster</h1>
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2>Monster</h2>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+    
+
+    <h4 class="name" id="Monster"><span class="type-signature"></span>new Monster<span class="signature">()</span><span class="type-signature"></span></h4>
+
+    
+
+
+
+<div class="description">
+    All Monsters have these properties
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+    <h5 class="subsection-title">Properties:</h5>
+
+    
+
+<table class="props">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>hp</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">health points</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>max_hp</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">maximum health points</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>xp</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">Experience awarded for killing this monster</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>name</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">entity name (for monsters it is null)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>angle</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">angle the character is looking at.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>direction</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">direction in which the character is looking (0:down,1:left,2:right;3:up)</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>real_x</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">x position on map</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>real_y</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">y position on map</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>id</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the Monster id, All Monsters in entities are listed by there id.</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>in</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the Map name on which map the monster is</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>from_x</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the last movement starting x position of the character</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>from_y</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the last movement starting y position of the character</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>going_x</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the last target x position of the character</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>going_y</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+|
+
+<span class="param-type">undefined</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the last target y position of the character</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>dead</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">is the monster dead</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>died</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">Date</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">when did the Monster die</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>attack</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the Average attack damage the monster does</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>speed</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">number</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the Normal walking speed of the monster. After aggroing</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>type</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">the type of the Entity, for monsters this is always "monster"</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>c</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#ChannelingConditions">ChannelingConditions</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">channelling conditions</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>s</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type"><a href="global.html#StatusConditions">StatusConditions</a></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">status conditions</td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="typedefs.js.html">typedefs.js</a>, <a href="typedefs.js.html#line150">line 150</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    </div>
+
+    
+        <h3 class="subsection-title">Extends</h3>
+
+        
+
+
+    <ul>
+        <li><a href="PIXI.Sprite.html">PIXI.Sprite</a></li>
+    </ul>
+
+
+    
+
+    
+
+    
+
+     
+
+    
+
+    
+
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Character.html">Character</a></li><li><a href="Monster.html">Monster</a></li><li><a href="PIXI.Sprite.html">Sprite</a></li><li><a href="Player.html">Player</a></li></ul><h3>Global</h3><ul><li><a href="global.html#accept_party_invite">accept_party_invite</a></li><li><a href="global.html#accept_party_request">accept_party_request</a></li><li><a href="global.html#activate">activate</a></li><li><a href="global.html#attack">attack</a></li><li><a href="global.html#bfs">bfs</a></li><li><a href="global.html#buy">buy</a></li><li><a href="global.html#can_attack">can_attack</a></li><li><a href="global.html#can_heal">can_heal</a></li><li><a href="global.html#can_move_to">can_move_to</a></li><li><a href="global.html#can_use">can_use</a></li><li><a href="global.html#change_target">change_target</a></li><li><a href="global.html#clear_drawings">clear_drawings</a></li><li><a href="global.html#compound">compound</a></li><li><a href="global.html#continue_pathfinding">continue_pathfinding</a></li><li><a href="global.html#destroy_item">destroy_item</a></li><li><a href="global.html#draw_circle">draw_circle</a></li><li><a href="global.html#draw_line">draw_line</a></li><li><a href="global.html#equip">equip</a></li><li><a href="global.html#game_log">game_log</a></li><li><a href="global.html#get_map">get_map</a></li><li><a href="global.html#get_nearest_hostile">get_nearest_hostile</a></li><li><a href="global.html#get_nearest_monster">get_nearest_monster</a></li><li><a href="global.html#get_player">get_player</a></li><li><a href="global.html#get_socket">get_socket</a></li><li><a href="global.html#get_target">get_target</a></li><li><a href="global.html#get_target_of">get_target_of</a></li><li><a href="global.html#get_targeted_monster">get_targeted_monster</a></li><li><a href="global.html#handle_command">handle_command</a></li><li><a href="global.html#handle_death">handle_death</a></li><li><a href="global.html#heal">heal</a></li><li><a href="global.html#in_attack_range">in_attack_range</a></li><li><a href="global.html#is_moving">is_moving</a></li><li><a href="global.html#is_transporting">is_transporting</a></li><li><a href="global.html#item_grade">item_grade</a></li><li><a href="global.html#item_properties">item_properties</a></li><li><a href="global.html#item_value">item_value</a></li><li><a href="global.html#load_code">load_code</a></li><li><a href="global.html#loot">loot</a></li><li><a href="global.html#move">move</a></li><li><a href="global.html#mssince">mssince</a></li><li><a href="global.html#on_cm">on_cm</a></li><li><a href="global.html#on_combined_damage">on_combined_damage</a></li><li><a href="global.html#on_destroy">on_destroy</a></li><li><a href="global.html#on_disappear">on_disappear</a></li><li><a href="global.html#on_draw">on_draw</a></li><li><a href="global.html#on_party_invite">on_party_invite</a></li><li><a href="global.html#on_party_request">on_party_request</a></li><li><a href="global.html#respawn">respawn</a></li><li><a href="global.html#say">say</a></li><li><a href="global.html#sell">sell</a></li><li><a href="global.html#send_cm">send_cm</a></li><li><a href="global.html#send_gold">send_gold</a></li><li><a href="global.html#send_item">send_item</a></li><li><a href="global.html#send_party_invite">send_party_invite</a></li><li><a href="global.html#send_party_request">send_party_request</a></li><li><a href="global.html#set_message">set_message</a></li><li><a href="global.html#shift">shift</a></li><li><a href="global.html#show_json">show_json</a></li><li><a href="global.html#smart_move">smart_move</a></li><li><a href="global.html#smart_move_logic">smart_move_logic</a></li><li><a href="global.html#smooth_path">smooth_path</a></li><li><a href="global.html#start_pathfinding">start_pathfinding</a></li><li><a href="global.html#stop">stop</a></li><li><a href="global.html#trade">trade</a></li><li><a href="global.html#trade_buy">trade_buy</a></li><li><a href="global.html#u_item">u_item</a></li><li><a href="global.html#upgrade">upgrade</a></li><li><a href="global.html#use">use</a></li><li><a href="global.html#use_hp_or_mp">use_hp_or_mp</a></li><li><a href="global.html#use_skill">use_skill</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 14 2017 10:01:50 GMT+0200 (CEST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

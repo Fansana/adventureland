@@ -1,63 +1,42 @@
-//#NOTE: If you want to see a new function/feature, just request it at: https://github.com/kaansoral/adventureland/issues
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: runner_functions.js</title>
 
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: runner_functions.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>//#NOTE: If you want to see a new function/feature, just request it at: https://github.com/kaansoral/adventureland/issues
 var character = parent.character;
 var G = parent.G; // Game data
 var safeties = true;
-
-server = {
-    mode: parent.gameplay, // "normal", "hardcore", "test"
-    pvp: parent.is_pvp, // true for PVP servers, use is_pvp() for maps
-    region: parent.server_region, // "EU", "US", "ASIA"
-    id: parent.server_identifier, // "I", "II", "PVP", "TEST"
-}
-
-game = {
-    platform: parent.is_electron && "electron" || "web", // "electron" for Steam, Mac clients, "web" for https://adventure.land
-    graphics: !parent.no_graphics, // if game.graphics is false, don't draw stuff to the game in your Code
-    html: !parent.no_html, // if game.html is false, this character is loaded in [CODE] mode
-}
-
-function start_character(name, code_slot_or_name) {
-    // Loads a character in [CODE] mode
-    parent.start_character_runner(name, code_slot_or_name)
-}
-
-function command_character(name, code_snippet) {
-    // Commands the character in [CODE] mode
-    parent.character_code_eval(name, code_snippet)
-}
-
-function get_active_characters() {
-    // States: "self", "starting","loading", "active", "code"
-    // Example: {"Me":"self","Protector":"loading"}
-    return parent.get_active_characters()
-}
-
-function is_pvp() {
-    return G.maps[character.map].pvp || server.is_pvp;
-}
-
-function is_npc(entity) {
-    if (entity && (entity.npc || entity.type == "npc")) return true;
-}
-
-function is_monster(entity) {
-    if (entity && entity.type == "monster") return true;
-}
-
-function is_player(entity) {
-    if (entity && entity.type == "character" && !entity.npc) return true;
-}
-
-function is_character(e) {
-    return is_player(e);
-}
 
 /**
  * Activates an item, likely a booster, in the num-th inventory slot
  * @param {number} num number of Inventory slot
  */
-function activate(num) {
+function activate(num)
+{
     parent.activate(num);
 }
 
@@ -68,16 +47,15 @@ function activate(num) {
  * @param {number} num   - Position of Inventory Slot starting from 0
  * @param {string} name  - name of the Item
  */
-function shift(num, name) {
+function shift(num, name)
+{
     parent.shift(num, name);
 }
-
 /**
  * (WIP) Check if the cooldown of a class skill has passed
  * @param {string} name - name of skill
  * @returns {boolean}   - true of cooldown has passed
  */
-
 function can_use(name) // work in progress, can be used to check cooldowns of class skills [02/02/17]
 {
     return parent.can_use(name);
@@ -115,7 +93,7 @@ function use_skill(name, target) {
 
 /**
  * Returns an object containing all the stat properties of an item
- * @param {Gear} item             - The Item in question
+ * @param {Gear} item               - The Item in question
  * @returns {ItemStats|null}      - An Object containing all stats and there number or null on error
  */
 function item_properties(item) // example: item_properties(character.items[0])
@@ -139,7 +117,6 @@ function item_grade(item) // example: item_grade(character.items[0])
     if (!item || !item.name) return -1;
     return calculate_item_grade(G.items[item.name], item);
 }
-
 /**
  * Returns how much the item is worth in gold
  * @param {Gear|Consumables} item
@@ -150,17 +127,6 @@ function item_value(item) // example: item_value(character.items[0])
     if (!item || !item.name) return 0;
     return calculate_item_value(item);
 }
-
-
-function is_paused() {
-    return parent.paused;
-}
-
-function pause() // Pauses the Graphics
-{
-    parent.pause();
-}
-
 /**
  * Return Socket.IO socket, this is the Object which the game uses to communicate with the server
  * @returns {socket}
@@ -168,7 +134,6 @@ function pause() // Pauses the Graphics
 function get_socket() {
     return parent.socket;
 }
-
 /**
  * Returns current map the player is on
  * @returns {Map} current map the player is on
@@ -176,20 +141,16 @@ function get_socket() {
 function get_map() {
     return parent.G.maps[parent.current_map];
 }
-
 /**
- * When CODE is active set uses a window in the bottom right hand corner to display a status messages
+ * When CODE is active uses a window in the bottom right hand corner to display a status messages
  * The window is pretty small so keep it short.
  * @param {string} text the text that should be displayed
  * @param {string} [color] the color in which the text should be displayed
  */
 function set_message(text, color) {
-    if (color) text = "<span style='color: " + color + "'>" + text + "</span>";
-
-    if (!game.html) parent.set_status(text);
-    else $('#gg').html(text);
+    if (color) text = "&lt;span style='color: " + color + "'>" + text + "&lt;/span>";
+    $('#gg').html(text);
 }
-
 /**
  * Uses the game log to print out a message
  * @param {string} message the message to print
@@ -199,11 +160,10 @@ function game_log(message, color) {
     if (!color) color = "#51D2E1";
     parent.add_log(message, color);
 }
-
 /**
  * Returns Entity which the Entity is targeting
- * @param {Monster} entity The Entity of which to fetch the target
- * @returns {Monster|null} the target entity or null if the entity has no target
+ * @param {Monster} entity
+ * @returns {Monster|null}
  */
 function get_target_of(entity) // .target is a Name for Monsters and `id` for Players - this function return whatever the entity in question is targeting
 {
@@ -221,8 +181,7 @@ function get_target_of(entity) // .target is a Name for Monsters and `id` for Pl
  * @returns {Monster|Player|null} - Returns the current target Entity of the character
  */
 function get_target() {
-    if (parent.ctarget && !parent.ctarget.dead) return parent.ctarget;
-    return null;
+    return parent.ctarget;
 }
 
 /**
@@ -231,13 +190,13 @@ function get_target() {
  * @returns {Monster|null} - Returns the current target Entity of the character
  */
 function get_targeted_monster() {
-    if (parent.ctarget && !parent.ctarget.dead && parent.ctarget.type == 'monster') return parent.ctarget;
+    if (parent.ctarget &amp;&amp; !parent.ctarget.dead &amp;&amp; parent.ctarget.type == 'monster') return parent.ctarget;
     return null;
 }
 
 /**
  * Change the targeted entity
- * @param {Monster} target the new target
+ * @param {Monster} target
  * @param {boolean} [send=false] - send change target to server
  */
 function change_target(target, send) {
@@ -254,76 +213,68 @@ function change_target(target, send) {
 /**
  * Checks if there is a clear path to the coordinates or the entity.
  * For an entity you don't have to supply the second argument
- * @param {Monster|Player|number} x This can be either be a number or an entity. When this is an entity the function will check if there is a clear path to that entity.
- * When this a number the function also expects the y coordinate to be given.
- * @param {number} [y] The y coordinate of the position
- * @returns {boolean} Whether or not there is a clear path the the coordinates
+ * @param {Monster|Player|number} x
+ * @param {number} [y]
+ * @returns {boolean}
  */
-
-function can_move_to(x, y) {
-    if (is_object(x)) y = x.real_y, x = x.real_x;
-    return can_move({map: character.map, x: character.real_x, y: character.real_y, going_x: x, going_y: y});
-}
-
-function xmove(x, y) {
-    if (can_move_to(x, y)) move(x, y);
-    else smart_move({x: x, y: y});
+function can_move_to(x,y)
+{
+    if(is_object(x)) y=x.real_y,x=x.real_x;
+    return can_move({map:character.map,x:character.real_x,y:character.real_y,going_x:x,going_y:y});
 }
 
 /**
  * Checks if the Entity is in attack range
- * @param {Player|Monster} target The entity to check
- * @returns {boolean} True if the entity is in range
+ * @param {Player|Monster} target
+ * @returns {boolean}
  */
 function in_attack_range(target) // also works for priests/heal
 {
     if (!target) return false;
-    return (parent.distance(character, target) <= character.range);
+    return (parent.distance(character, target) &lt;= character.range);
 }
 
 /**
  * Checks if the character is able to attack the target
  * @param {Monster|Player} target - the Entity for which to check
- * @returns {boolean} True if the entity can be attacked
+ * @returns {boolean}
  */
 function can_attack(target) // also works for priests/heal
 {
     // is_disabled function checks .rip and .stunned
     if (!target) return false;
-    if (!parent.is_disabled(character) && in_attack_range(target) && new Date() >= parent.next_attack) return true;
-    return false;
+    return (!parent.is_disabled(character) &amp;&amp; in_attack_range(target) &amp;&amp; new Date() >= parent.next_attack);
 }
 
 /**
  * Checks if the character is able to heal the target
  * Same as can_attack but with a more intuitive name
  * @param {Monster|Player} target - the Entity for which to check
- * @returns {boolean} True if the target can be healed
+ * @returns {boolean}
  */
 function can_heal(target) {
-    if (is_monster(target)) return false;
     return can_attack(target);
 }
 
 /**
  * return true if the entity is moving
- * @param {Player|Character|Monster} entity The entity in question
- * @returns {boolean} True if the entity is moving
+ * @param {Player|Character|Monster} entity
+ * @returns {boolean}
  */
 function is_moving(entity) {
-    if (entity.me && smart.moving) return true;
+    if (entity.me &amp;&amp; smart.moving) return true;
     if (entity.moving) return true;
     return false;
 }
 
 /**
  * Is the entity using the town teleportation skill
- * @param entity {Player|Character|Monster} The entity in question
- * @returns {boolean} True if the entity using the teleport skill
+ * @param entity {Player|Character|Monster}
+ * @returns {boolean}
  */
 function is_transporting(entity) {
     if (entity.c.town) return true;
-    if (entity.me && parent.transporting) return true;
+    if (entity.me &amp;&amp; parent.transporting) return true;
     return false;
 }
 
@@ -332,24 +283,22 @@ function is_transporting(entity) {
  * @param {Player|Monster} target - Target to attack
  */
 function attack(target) {
-    if (safeties && mssince(last_attack) < 400) return;
+    if (safeties &amp;&amp; mssince(last_attack) &lt; 400) return;
     if (!target) {
         game_log("Nothing to attack()", "gray");
         return;
     }
-    if (target.type == "character")
-        parent.player_attack.call(target);
-    else
-        parent.monster_attack.call(target);
+    if (target.type == "character") parent.player_attack.call(target);
+    else parent.monster_attack.call(target);
     last_attack = new Date();
 }
 
 /**
  * Tries to heal the targeted Character
- * @param {Player} target The target to heal
+ * @param {Player} target
  */
 function heal(target) {
-    if (safeties && mssince(last_attack) < 400) return;
+    if (safeties &amp;&amp; mssince(last_attack) &lt; 400) return;
     if (!target) {
         game_log("No one to heal()", "gray");
         return;
@@ -357,9 +306,8 @@ function heal(target) {
     parent.player_heal.call(target);
     last_attack = new Date();
 }
-
 /**
- * Buys items from NPC. The NPC has to be near enough to be able to buy from him. Usually 400px
+ * Buys items from NPC. The NPC has to be near enough to be able to buy from him.
  * @param {String} name      - Name of the Item
  * @param {number} quantity  - Quantity
  */
@@ -367,9 +315,8 @@ function buy(name, quantity) //item names can be spotted from show_json(characte
 {
     parent.buy(name, quantity);
 }
-
 /**
- * Tries to sell the Item in the num-th inventory slot to an npc.
+ * Sell the Item in the num-th inventory slot starting from 0.
  * @param {number} num       - Inventory slot
  * @param {number} quantity  - Quantity
  */
@@ -377,7 +324,6 @@ function sell(num, quantity) //sell an item from character.items by it's order -
 {
     parent.sell(num, quantity);
 }
-
 /**
  * Equips the Item in the num-th inventory Slot starting from 0.
  * @param {number} num - The slot the items is currently in
@@ -385,23 +331,16 @@ function sell(num, quantity) //sell an item from character.items by it's order -
 function equip(num) {
     parent.socket.emit("equip", {num: num});
 }
-
-function unequip(slot) // show_json(character.slots) => to see slot options
-{
-    parent.socket.emit("unequip", {slot: slot});
-}
-
 /**
  * Puts an item up for sale
  * @param {number} num      - The slot the item is in
- * @param {number} trade_slot   - The slot in the trade window where is should appear
+ * @param {number} trade_slot   - The slot in the trade window where is shoudl appear
  * @param {number} price    - The price of the item
  */
 function trade(num, trade_slot, price) // where trade_slot is 1 to 16 - example, trade(0,4,1000) puts the first item in inventory to the 4th trade slot for 1000 gold [27/10/16]
 {
     parent.trade("trade" + trade_slot, num, price);
 }
-
 /**
  *
  * @param {Player} target     - The player entity you want to buy from.
@@ -425,7 +364,6 @@ function upgrade(item_num, scroll_num, offering_num) //number of the item and sc
     parent.u_offering = offering_num;
     parent.upgrade();
 }
-
 /**
  * Uses the upgrade npc to combine jewelery
  * Combining works by taking 3 jewelery items of the same type and a scroll
@@ -446,18 +384,6 @@ function compound(item0, item1, item2, scroll_num, offering_num) // for example 
     parent.compound();
 }
 
-function craft(i0, i1, i2, i3, i4, i5, i6, i7, i8)
-// for example -> craft(null,0,null,null,1,null,null,2,null)
-// sends 3 items to be crafted, the 0th, 1st, 2nd items in your inventory, and it places them all in the middle column of crafting
-{
-    parent.cr_items = [i0, i1, i2, i3, i4, i5, i6, i7, i8];
-    parent.craft();
-}
-
-/**
- * Tries to exchange an item in a specific inventory slot. This function also works with quest items and when multiple items are exchanged at once e.g. seashells.
- * @param {number} item_num - Inventory slot
- */
 function exchange(item_num) {
     parent.e_item = item_num;
     parent.exchange(1);
@@ -466,20 +392,15 @@ function exchange(item_num) {
 /**
  * Acts as if the player had typed the message into the chat and then send it.
  * This also allows for the use of commands.
- * @param {string} message - The message to send
+ * @param {string} message - The message
  */
 function say(message) // please use responsibly, thank you! :)
 {
     parent.say(message, 1);
 }
 
-function pm(name, message) // please use MORE responsibly, thank you! :)
-{
-    parent.private_say(name, message, 0)
-}
-
 /**
- * Sets the character moving to specific coordinates, before using this you should check if you can actually walk to your target or else you might end up somewhere else.
+ * sets the character moving to specific coordinates
  * @param {number} x - X coordinate
  * @param {number} y - Y coordinate
  */
@@ -500,19 +421,16 @@ function move(x, y) {
         m: character.m
     });
 }
-
 /**
  * A debug Command which opens a Window and shows the json representation of the Object.
  * @param {Object} e - The Object you like to inspect
  */
-
 function show_json(e) // renders the object as json inside the game
 {
     parent.show_json(parent.game_stringify(e, 2));
 }
-
 /**
- * Returns the entity of a player, only works when the player is visible.
+ *
  * @param {String} name - The name of the character
  * @returns {Player} - Returns the Player Object
  */
@@ -520,10 +438,9 @@ function get_player(name) // returns the player by name, if the player is within
 {
     var target = null, entities = parent.entities;
     if (name == character.name) target = character;
-    for (i in entities) if (entities[i].type == "character" && entities[i].name == name) target = entities[i];
+    for (i in entities) if (entities[i].type == "character" &amp;&amp; entities[i].name == name) target = entities[i];
     return target;
 }
-
 /**
  * Get nearest Monster out of the entities array that meets certain criteria and returns it.
  * @param {Object} args
@@ -545,34 +462,31 @@ function get_nearest_monster(args) {
     var min_d = 999999, target = null;
 
     if (!args) args = {};
-    if (args && args.target && args.target.name) args.target = args.target.name;
+    if (args &amp;&amp; args.target &amp;&amp; args.target.name) args.target = args.target.name;
 
     for (id in parent.entities) {
         var current = parent.entities[id];
         if (current.type != "monster" || current.dead) continue;
-        if (args.type && current.mtype != args.type) continue;
-        if (args.min_xp && current.xp < args.min_xp) continue;
-        if (args.max_att && current.attack > args.max_att) continue;
-        if (args.target && current.target != args.target) continue;
-        if (args.no_target && current.target && current.target != character.name) continue;
-        if (args.path_check && !can_move_to(current)) continue;
+        if (args.type &amp;&amp; current.mtype != args.type) continue;
+        if (args.min_xp &amp;&amp; current.xp &lt; args.min_xp) continue;
+        if (args.max_att &amp;&amp; current.attack > args.max_att) continue;
+        if (args.target &amp;&amp; current.target != args.target) continue;
+        if (args.no_target &amp;&amp; current.target &amp;&amp; current.target != character.name) continue;
+        if (args.path_check &amp;&amp; !can_move_to(current)) continue;
         var c_dist = parent.distance(character, current);
-        if (c_dist < min_d) min_d = c_dist, target = current;
+        if (c_dist &lt; min_d) min_d = c_dist, target = current;
     }
     return target;
 }
-
 /**
- * Get nearest Hostile. This function is manly for finding hostile players in your proximity
+ *
  * @param {Object} args
- * @param {Array.<string>} [args.exclude] An array of Player names which will not be considered hostile
+ * @param {Array.&lt;string>} [args.exclude] A list of Player names which will not be considered hostile
  * @param {boolean} [args.friendship=true] Should friends be considered friendly
  * @returns {Player}
  */
 function get_nearest_hostile(args) // mainly as an example [08/02/17]
 {
-
-
     var min_d = 999999, target = null;
 
     if (!args) args = {};
@@ -581,43 +495,41 @@ function get_nearest_hostile(args) // mainly as an example [08/02/17]
     for (id in parent.entities) {
         var current = parent.entities[id];
         if (current.type != "character" || current.rip || current.invincible || current.npc) continue;
-        if (current.party && character.party == current.party) continue;
-        if (current.guild && character.guild == current.guild) continue;
-        if (args.friendship && in_arr(current.owner, parent.friends)) continue;
-        if (args.exclude && in_arr(current.name, args.exclude)) continue; // get_nearest_hostile({exclude:["Wizard"]}); Thanks
+        if (current.party &amp;&amp; character.party == current.party) continue;
+        if (current.guild &amp;&amp; character.guild == current.guild) continue;
+        if (args.friendship &amp;&amp; in_arr(current.owner, parent.friends)) continue;
+        if (args.exclude &amp;&amp; in_arr(current.name, args.exclude)) continue; // get_nearest_hostile({exclude:["Wizard"]}); Thanks
         var c_dist = parent.distance(character, current);
-        if (c_dist < min_d) min_d = c_dist, target = current;
+        if (c_dist &lt; min_d) min_d = c_dist, target = current;
     }
     return target;
 }
-
 /**
  * Uses a simple algorithm to decide weather to use a mana or health potion.
  * Tries to max out the health and mana.
  * This function should not be called in fast running loops or otherwise it will use a high amount of potions.
  */
 function use_hp_or_mp() {
-    if (safeties && mssince(last_potion) < 600) return;
+    if (safeties &amp;&amp; mssince(last_potion) &lt; 600) return;
     var used = false;
-    if (new Date() < parent.next_potion) return;
-    if (character.mp / character.max_mp < 0.2) use('use_mp'), used = true;
-    else if (character.hp / character.max_hp < 0.7) use('use_hp'), used = true;
-    else if (character.mp / character.max_mp < 0.8) use('use_mp'), used = true;
-    else if (character.hp < character.max_hp) use('use_hp'), used = true;
-    else if (character.mp < character.max_mp) use('use_mp'), used = true;
+    if (new Date() &lt; parent.next_potion) return;
+    if (character.mp / character.max_mp &lt; 0.2) use('use_mp'), used = true;
+    else if (character.hp / character.max_hp &lt; 0.7) use('use_hp'), used = true;
+    else if (character.mp / character.max_mp &lt; 0.8) use('use_mp'), used = true;
+    else if (character.hp &lt; character.max_hp) use('use_hp'), used = true;
+    else if (character.mp &lt; character.max_mp) use('use_mp'), used = true;
     if (used) last_potion = new Date();
 }
-
 /**
  * Find the first 2 chests and opens them
  */
 function loot() {
     var looted = 0;
-    if (safeties && mssince(last_loot) < 200) return;
+    if (safeties &amp;&amp; mssince(last_loot) &lt; 200) return;
     last_loot = new Date();
     for (id in parent.chests) {
         var chest = parent.chests[id];
-        if (safeties && (chest.items > character.esize || chest.last_loot && mssince(chest.last_loot) < 1600)) continue;
+        if (safeties &amp;&amp; (chest.items > character.esize || chest.last_loot &amp;&amp; mssince(chest.last_loot) &lt; 1600)) continue;
         chest.last_loot = last_loot;
         parent.socket.emit("open_chest", {id: id});
         looted++;
@@ -652,7 +564,6 @@ function send_item(receiver, num, quantity) {
  * Destroys an item in the num-th Inventory slot
  * @param {number} num - The Inventory slot of the Item [0,41].
  */
-
 function destroy_item(num) // num: 0 to 41
 {
     parent.socket.emit("destroy", {num: num});
@@ -666,11 +577,10 @@ function destroy_item(num) // num: 0 to 41
 function send_party_invite(name, is_request) // name could be a player object, name, or id
 {
     if (is_object(name)) name = name.name;
-    parent.socket.emit('party', {event: is_request && 'request' || 'invite', name: name});
+    parent.socket.emit('party', {event: is_request &amp;&amp; 'request' || 'invite', name: name});
 }
 
 /**
- * @module group management
  * Request to be invited into a party
  * @param {Player|string} name   - name ca be a player object, a player name, or an id
  */
@@ -679,7 +589,6 @@ function send_party_request(name) {
 }
 
 /**
- * @module group management
  * Accept party invite from player
  * @param {string} name
  */
@@ -688,7 +597,6 @@ function accept_party_invite(name) {
 }
 
 /**
- * @module group management
  * Accept party request from player.
  * @param {string} name
  */
@@ -704,7 +612,6 @@ function respawn() {
 }
 
 /**
- * @module callback
  * When a character dies, character.rip is true, you can override handle_death and manually respawn
  * IDEA: A Resident PVP-Dweller, with an evasive Code + irregular respawning
  * respawn current has a 12 second cooldown, best wait 15 seconds before respawning [24/11/16]
@@ -716,9 +623,7 @@ function handle_death() {
 
     return -1;
 }
-
 /**
- * @module callback
  * You can implement your own chat commands with this function.
  * @param command {string}
  * @param args {string}
@@ -730,9 +635,7 @@ function handle_command(command, args) // command's are things like "/party" tha
     // return true;
     return -1;
 }
-
 /**
- *
  * Send CODE messages to the characters, of course it only works if both characters have CODE active.
  * @param {Array|string} to - Either an Array of names or just a name
  * @param {Object} data     - The data to be sent in object form
@@ -742,18 +645,15 @@ function send_cm(to, data) {
     // data: JSON object
     parent.send_code_message(to, data);
 }
-
 /**
- * @module callback
+ *
  * @param {string} name - Sender of Code Message
  * @param {Object} data - An Object containing the information send
  */
 function on_cm(name, data) {
     game_log("Received a code message from: " + name);
 }
-
 /**
- * @module callback
  * This function gets called whenever an entity disappears
  * @param {Player|Monster} entity
  * @param data
@@ -761,18 +661,15 @@ function on_cm(name, data) {
 function on_disappear(entity, data) {
     // game_log("disappear: "+entity.id+" "+JSON.stringify(data));
 }
-
 /**
- * @module callback
  * When multiple characters stay in the same spot, they receive combined damage, this function gets called whenever a monster deals combined damage.
  * Override this function in CODE to react to it
  */
-function on_combined_damage() {
+function on_combined_damage()
+{
     // move(character.real_x+5,character.real_y);
 }
-
 /**
- * @module callback
  * Someone is inviting you to a party
  * @param {string} name - The name of the inviting player
  */
@@ -780,46 +677,32 @@ function on_party_invite(name) // called by the inviter's name
 {
     // accept_party_invite(name)
 }
-
 /**
- * @module callbacks
  * Someone requesting to join your existing party
  * @param {string} name  - The name of the player
  */
-function on_party_request(name) {
+function on_party_request(name)
+{
     // accept_party_request(name)
 }
-
 /**
- * @module callbacks
  * Called just before the CODE is destroyed.
  * Can be used to remove event listeners or revert states.
  */
-function on_destroy() {
+function on_destroy()
+{
     clear_drawings();
 }
-
 /**
- * @module callbacks
  * The game calls this function at the best place in each game draw frame, so if you are playing the game at 60fps, this function gets called 60 times per second
  */
-function on_draw() {
+function on_draw()
+{
 
 }
-
-function on_game_event(event) {
-    if (event.name == "pinkgoo") {
-        // start searching for the "Love Goo" of the Valentine's Day event
-    }
-    if (event.name == "goblin") {
-        // start searching for the "Sneaky Goblin"
-    }
-}
-
 /**
- * @module callback
  * Override this function to listen for game events
- * @callback
+ * @callback 
  * @param event {Object}
  * @param event.name {string} name of the event e.g. pinkgoo or goblin.
  */
@@ -834,10 +717,7 @@ function on_game_event(event) {
 
 var PIXI = parent.PIXI; // for drawing stuff into the game
 var drawings = parent.drawings;
-var buttons = parent.code_buttons;
-
 /**
- * @module graphics
  * Documentation: [https://pixijs.github.io/docs/PIXI.Graphics.html]{@link https://pixijs.github.io/docs/PIXI.Graphics.html}
  * keep in mind that drawings could significantly slow redraws, especially if you don't .destroy() them
  * @param x {number}
@@ -862,9 +742,7 @@ function draw_line(x, y, x2, y2, size, color) {
     parent.map.addChild(e); //e.destroy() would remove it, if you draw too many things and leave them there, it will likely bring the game to a halt
     return e;
 }
-
 /**
- * @module graphics
  * Documentation: [https://pixijs.github.io/docs/PIXI.Graphics.html]{@link https://pixijs.github.io/docs/PIXI.Graphics.html}
  * Example: draw_circle(character.real_x,character.real_y,character.range) :) [22/10/16]
  * @param x {number}
@@ -885,10 +763,7 @@ function draw_circle(x, y, radius, size, color) {
     parent.map.addChild(e);
     return e;
 }
-
-
 /**
- * @module graphics
  *  Clears drawings added with draw_circle and draw_line functions from the screen.
  */
 function clear_drawings() {
@@ -901,82 +776,22 @@ function clear_drawings() {
     drawings = parent.drawings = [];
 }
 
-function add_top_button(id, value, fn) {
-    if (!buttons[id]) {
-        buttons[id] = {
-            value: value, fn: function () {
-            }, place: "top"
-        };
-        parent.$(".codebuttons").append("<div class='gamebutton codebutton" + id + "' data-id='" + id + "' onclick='code_button_click(this)'>BUTTON</div> ")
-    }
-    if (fn) set_button_onclick(id, fn)
-    if (value) set_button_value(id, value);
-}
+var game = {
+    last: 0,
+    callbacks: [],
+    on: function (event, f) {
 
-function set_button_value(id, value) {
-    parent.$(".codebutton" + id).html(value);
-}
+    },
+    once: function (event, f) {
 
-function set_button_color(id, color) {
-    parent.$(".codebutton" + id).css("border-color", color);
-}
+    },
+    remove: function (num) {
 
-function set_button_onclick(id, fn) {
-    buttons[id].fn = fn;
-}
+    },
+    trigger: function (event, args) {
 
-function clear_buttons() {
-    parent.$('.codebuttons').html("");
-    parent.$('.codebbuttons').html("");
-    buttons = parent.code_buttons = {};
-}
-
-function auto_reload(value) {
-    // Configures the game to auto reload in case you disconnect due to rare network issues
-    if (value === false) parent.auto_reload = "off";
-    else if (value == "auto") parent.auto_reload = "auto"; // code or merchant stand
-    else parent.auto_reload = "on"; // always reload
-}
-
-game.listeners = [];
-game.on = function (event, f) {
-    var def = {f: f, id: randomStr(30), event: event};
-    game.listeners.push(def);
-    return def.id;
+    },
 };
-game.once = function (event, f) {
-    var def = {f: f, id: randomStr(30), event: event, once: true};
-    game.listeners.push(def);
-    return def.id;
-};
-game.remove = function (id) {
-    for (var i = 0; i < game.listeners.length; i++) {
-        if (game.listeners[i].id == id) {
-            game.listeners.splice(i, 1);
-            break;
-        }
-    }
-};
-game.trigger = function (event, args) {
-    var to_delete = [];
-    for (var i = 0; i < game.listeners.length; i++) {
-        var l = game.listeners[i];
-        if (l.event == event || l.event == "all") {
-            try {
-                l.f(args, event);
-            }
-            catch (e) {
-                game_log("Listener Exception (" + l.event + ") " + e, code_color);
-            }
-            if (l.once || l.f && l.f.delete) to_delete.push(l.id);
-        }
-    }
-    // game_log(to_delete);
-};
-
-function trigger_event(name, data) {
-    game.trigger(name, data);
-}
 
 function preview_item(def, args) {
     //PLANNED Improvements:
@@ -989,7 +804,7 @@ function preview_item(def, args) {
     var name = def.id || args.id || "staff";
     parent.prop_cache = {}; // bust the item cache
     if (def.compound || def.upgrade) {
-        for (var level = 0; level <= 10; level++)
+        for (var level = 0; level &lt;= 10; level++)
             html += parent.render_item("html", {
                 item: def,
                 name: name,
@@ -1002,40 +817,10 @@ function preview_item(def, args) {
     else {
         html += parent.render_item("html", {item: def, name: name, thumbnail: args.thumbnail});
     }
-    html += "<div style='margin: 10px; border: 5px solid gray; padding: 4px'>" + parent.json_to_html(def) + "</div>";
+    html += "&lt;div style='margin: 10px; border: 5px solid gray; padding: 4px'>" + parent.json_to_html(def) + "&lt;/div>";
     parent.show_modal(html);
     parent.prop_cache = {};
 }
-
-function preview_item(def, args) {
-    //PLANNED Improvements:
-    //- Importing a custom thumbnail
-    //- Drafting custom item abilities
-    // Email me or create an issue if you need these features (if you want to suggest new items) [20/03/17]
-    if (!args) args = {};
-    var html = "";
-    var styles = "vertical-align: top; margin: 10px";
-    var name = def.id || args.id || "staff";
-    parent.prop_cache = {}; // bust the item cache
-    if (def.compound || def.upgrade) {
-        for (var level = 0; level <= 10; level++)
-            html += parent.render_item("html", {
-                item: def,
-                name: name,
-                styles: styles,
-                actual: {name: name, level: level},
-                sell: true,
-                thumbnail: args.thumbnail
-            });
-    }
-    else {
-        html += parent.render_item("html", {item: def, name: name, thumbnail: args.thumbnail});
-    }
-    html += "<div style='margin: 10px; border: 5px solid gray; padding: 4px'>" + parent.json_to_html(def) + "</div>";
-    parent.show_modal(html);
-    parent.prop_cache = {};
-}
-
 /**
  *
  * @param {string} name
@@ -1047,7 +832,7 @@ function load_code(name, onerror) // onerror can be a function that will be exec
         game_log("load_code: Failed to load", "#E13758");
     }
     var xhrObj = new XMLHttpRequest();
-    xhrObj.open('GET', "/code.js?name=" + encodeURIComponent(name) + "&timestamp=" + (new Date().getTime()), false);
+    xhrObj.open('GET', "/code.js?name=" + encodeURIComponent(name) + "&amp;timestamp=" + (new Date().getTime()), false);
     xhrObj.send('');
     var library = document.createElement("script");
     library.type = "text/javascript";
@@ -1070,9 +855,7 @@ var smart = {
     },
     flags: {}
 };
-
 /**
- * @module path_finding
  * smart_move uses a Breadth-first search path finding algorithm to find the shortest path
  * despite the name, smart_move isn't very smart or efficient, it's up to the players to
  * implement a better movement method.
@@ -1087,7 +870,8 @@ var smart = {
  * @param {number} destination.y - Destination coordinates
  * @param {function} on_done -  Function that gets executed once the path finding finishes.
  */
-function smart_move(destination, on_done) {
+function smart_move(destination, on_done)
+{
     smart.map = "";
     if (is_string(destination)) destination = {to: destination};
     if ("x" in destination) {
@@ -1102,7 +886,9 @@ function smart_move(destination, on_done) {
         if (G.monsters[destination.to]) {
             for (var name in G.maps)
                 (G.maps[name].monsters || []).forEach(function (pack) {
-                    if (pack.type != destination.to || G.maps[name].ignore || G.maps[name].instance) return;
+                    if (pack.type != destination.to || G.maps[name].ignore) return;
+
+                    //Monsters like the phoenix or mvampire have random spawn locations we want to check for the accordingly
                     if (pack.boundaries) // boundaries: for phoenix, mvampire
                     {
                         //Every time we search for the phoenix we will try a different location so if nobody kill it we will eventually find it
@@ -1129,8 +915,8 @@ function smart_move(destination, on_done) {
         }
         else if (destination.to == "upgrade" || destination.to == "compound") smart.map = "main", smart.x = -204, smart.y = -129;
         else if (destination.to == "exchange") smart.map = "main", smart.x = -26, smart.y = -432;
-        else if (destination.to == "potions" && character.map == "halloween") smart.map = "halloween", smart.x = 149, smart.y = -182;
-        else if (destination.to == "potions" && in_arr(character.map, ["winterland", "winter_inn", "winter_cave"])) smart.map = "winter_inn", smart.x = -84, smart.y = -173;
+        else if (destination.to == "potions" &amp;&amp; character.map == "halloween") smart.map = "halloween", smart.x = 149, smart.y = -182;
+        else if (destination.to == "potions" &amp;&amp; in_arr(character.map, ["winterland", "winter_inn", "winter_cave"])) smart.map = "winter_inn", smart.x = -84, smart.y = -173;
         else if (destination.to == "potions") smart.map = "main", smart.x = 56, smart.y = -122;
         else if (destination.to == "scrolls") smart.map = "main", smart.x = -465, smart.y = -71;
     }
@@ -1151,13 +937,11 @@ function smart_move(destination, on_done) {
         }
     }
     else smart.on_done = on_done || function () {
-    };
+        };
     console.log(smart.map + " " + smart.x + " " + smart.y);
 }
 
-
 /**
- * @module path_finding
  * Stop path finding and moving
  */
 function stop() {
@@ -1169,31 +953,21 @@ function stop() {
 var queue = [], visited = {}, start = 0, best = null;
 var moves = [[0, 15], [0, -15], [15, 0], [-15, 0]];
 
-/**
- * @module path_finding
- * @param index
- */
 function plot(index) {
     if (index == -1) return;
     plot(queue[index].i); // Recursively back-tracks the path we came from
     smart.plot.push(queue[index]);
 }
 
-/**
- * @module path_finding
- * @param node
- */
 function qpush(node) {
     // If we haven't visited this location, adds the location to the queue
-    if (smart.prune.map && smart.flags.map && node.map != smart.map) return;
+    if (smart.prune.map &amp;&amp; smart.flags.map &amp;&amp; node.map != smart.map) return;
     if (visited[node.map + "-" + node.x + "-" + node.y]) return;
     if (!node.i) node.i = start; // set the index, to aid the plot function
     queue.push(node);
     visited[node.map + "-" + node.x + "-" + node.y] = true;
 }
-
 /**
- * @module path_finding
  * Internal smart_move function
  * Assume the path ahead is [i] [i+1] [i+2] - This routine checks whether [i+1] could be skipped
  * The resulting path is smooth rather than rectangular and bumpy
@@ -1201,11 +975,11 @@ function qpush(node) {
  */
 function smooth_path() {
     var i = 0, j;
-    while (i < smart.plot.length) {
+    while (i &lt; smart.plot.length) {
         // Assume the path ahead is [i] [i+1] [i+2] - This routine checks whether [i+1] could be skipped
         // The resulting path is smooth rather than rectangular and bumpy
         // Try adding "function smooth_path(){}" or "smart.prune.smooth=false;" to your Code
-        while (i + 2 < smart.plot.length && smart.plot[i].map == smart.plot[i + 1].map && smart.plot[i].map == smart.plot[i + 1].map &&
+        while (i + 2 &lt; smart.plot.length &amp;&amp; smart.plot[i].map == smart.plot[i + 1].map &amp;&amp; smart.plot[i].map == smart.plot[i + 1].map &amp;&amp;
         can_move({
             map: smart.plot[i].map,
             x: smart.plot[i].x,
@@ -1219,25 +993,25 @@ function smooth_path() {
 }
 
 /**
- * @module path_finding
  * Internal smart_move function
  */
 function bfs() {
     var timer = new Date(), result = null, optimal = true;
-    while (start < queue.length) {
+
+    while (start &lt; queue.length) {
         var current = queue[start];
-        if (current.map == smart.map) {
+        if (current.map == smart.map) { //Is same MAP
             smart.flags.map = true;
-            if (abs(current.x - smart.x) + abs(current.y - smart.y) < smart.edge) {
+            if (abs(current.x - smart.x) + abs(current.y - smart.y) &lt; smart.edge) {
                 result = start;
                 break;
             }
-            else if (best === null || abs(current.x - smart.x) + abs(current.y - smart.y) < abs(queue[best].x - smart.x) + abs(queue[best].y - smart.y)) {
+            else if (best === null || abs(current.x - smart.x) + abs(current.y - smart.y) &lt; abs(queue[best].x - smart.x) + abs(queue[best].y - smart.y)) {
                 best = start;
             }
         }
         else if (current.map != smart.map) {
-            if (smart.prune.map && smart.flags.map) {
+            if (smart.prune.map &amp;&amp; smart.flags.map) {
                 start++;
                 continue;
             }
@@ -1245,7 +1019,7 @@ function bfs() {
                 if (simple_distance({x: door[0] + door[2] / 2, y: door[1] + door[3] / 2}, {
                         x: current.x,
                         y: current.y
-                    }) < 45)
+                    }) &lt; 45)
                     qpush({
                         map: door[4],
                         x: G.maps[door[4]].spawns[door[5] || 0][0],
@@ -1255,10 +1029,10 @@ function bfs() {
                     });
             });
             G.maps[current.map].npcs.forEach(function (npc) {
-                if (npc.id == "transporter" && simple_distance({x: npc.position[0], y: npc.position[1]}, {
+                if (npc.id == "transporter" &amp;&amp; simple_distance({x: npc.position[0], y: npc.position[1]}, {
                         x: current.x,
                         y: current.y
-                    }) < 75) {
+                    }) &lt; 75) {
                     for (var place in G.npcs.transporter.places) {
                         qpush({
                             map: place,
@@ -1284,11 +1058,12 @@ function bfs() {
             var new_x = parseInt(current.x + m[0]), new_y = parseInt(current.y + m[1]);
             // utilise can_move - game itself uses can_move too - smart_move is slow as can_move checks all the lines at each step
             if (can_move({map: current.map, x: current.x, y: current.y, going_x: new_x, going_y: new_y}))
-                qpush({map: current.map, x: new_x, y: new_y});
+                console.log(new_x, new_y);
+            qpush({map: current.map, x: new_x, y: new_y});
         });
 
         start++;
-        if (mssince(timer) > (!parent.is_hidden() && 40 || 500)) return;
+        if (mssince(timer) > (!parent.is_hidden() &amp;&amp; 40 || 500)) return;
     }
 
     if (result === null) result = best, optimal = false;
@@ -1308,9 +1083,7 @@ function bfs() {
     }
 }
 
-
 /**
- * @module path_finding
  * Internal smart_move function
  */
 function start_pathfinding() {
@@ -1322,7 +1095,6 @@ function start_pathfinding() {
 }
 
 /**
- * @module path_finding
  * Internal smart_move function
  */
 function continue_pathfinding() {
@@ -1330,22 +1102,17 @@ function continue_pathfinding() {
 }
 
 /**
- * @module path_finding
  * Internal smart_move function
  */
 function smart_move_logic() {
     if (!smart.moving) return;
-    if (!smart.searching && !smart.found) {
+    if (!smart.searching &amp;&amp; !smart.found) {
         start_pathfinding();
     }
     else if (!smart.found) {
-        if (Math.random() < 0.1) {
-            move(character.real_x + Math.random() * 0.0002 - 0.0001, character.real_y + Math.random() * 0.0002 - 0.0001);
-            parent.d_text(shuffle(["Hmm", "...", "???", "Definitely left", "No right!", "Is it?", "I can do this!", "I think ...", "What If", "Should be", "I'm Sure", "Nope", "Wait a min!", "Oh my"])[0], character, {color: shuffle(["#68B3D1", "#D06F99", "#6ED5A3", "#D2CF5A"])[0]});
-        }
         continue_pathfinding();
     }
-    else if (!character.moving && can_walk(character) && !is_transporting(character)) {
+    else if (!character.moving &amp;&amp; can_walk(character) &amp;&amp; !is_transporting(character)) {
         if (!smart.plot.length) {
             smart.moving = false;
             smart.on_done(true);
@@ -1361,7 +1128,7 @@ function smart_move_logic() {
             parent.socket.emit("transport", {to: current.map, s: current.s});
             // use("transporter",current.map);
         }
-        else if (character.map == current.map && can_move_to(current.x, current.y)) {
+        else if (character.map == current.map &amp;&amp; can_move_to(current.x, current.y)) {
             move(current.x, current.y);
         }
         else {
@@ -1375,38 +1142,31 @@ setInterval(function () {
     smart_move_logic();
 }, 80);
 
-function doneify(fn, s_event, f_event) {
-    return function (a, b, c, d, e, f) {
-        var rxd = randomStr(30);
-        parent.rxd = rxd;
-        fn(a, b, c, d, e, f);
-        return {
-            done: function (callback) {
-                game.once(s_event, function (event) {
-                    if (event.rxd == rxd) {
-                        callback(true, event);
-                        this.delete = true; // remove the .on listener
-                        parent.rxd = null;
-                    }
-                    // else game_log("rxd_mismatch");
-                });
-                game.once(f_event, function (event) {
-                    if (event.rxd == rxd) {
-                        callback(false, event);
-                        this.delete = true; // remove the .on listener
-                        parent.rxd = null;
-                    }
-                    // else game_log("rxd_mismatch");
-                });
-            }
-        };
-    };
-}
-
-buy = doneify(buy, "buy_success", "buy_fail");
-
 //safety flags
 var last_loot = new Date(0);
 var last_attack = new Date(0);
 var last_potion = new Date(0);
 var last_transport = new Date(0);
+</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Character.html">Character</a></li><li><a href="Monster.html">Monster</a></li><li><a href="PIXI.Sprite.html">Sprite</a></li><li><a href="Player.html">Player</a></li></ul><h3>Global</h3><ul><li><a href="global.html#accept_party_invite">accept_party_invite</a></li><li><a href="global.html#accept_party_request">accept_party_request</a></li><li><a href="global.html#activate">activate</a></li><li><a href="global.html#attack">attack</a></li><li><a href="global.html#bfs">bfs</a></li><li><a href="global.html#buy">buy</a></li><li><a href="global.html#can_attack">can_attack</a></li><li><a href="global.html#can_heal">can_heal</a></li><li><a href="global.html#can_move_to">can_move_to</a></li><li><a href="global.html#can_use">can_use</a></li><li><a href="global.html#change_target">change_target</a></li><li><a href="global.html#clear_drawings">clear_drawings</a></li><li><a href="global.html#compound">compound</a></li><li><a href="global.html#continue_pathfinding">continue_pathfinding</a></li><li><a href="global.html#destroy_item">destroy_item</a></li><li><a href="global.html#draw_circle">draw_circle</a></li><li><a href="global.html#draw_line">draw_line</a></li><li><a href="global.html#equip">equip</a></li><li><a href="global.html#game_log">game_log</a></li><li><a href="global.html#get_map">get_map</a></li><li><a href="global.html#get_nearest_hostile">get_nearest_hostile</a></li><li><a href="global.html#get_nearest_monster">get_nearest_monster</a></li><li><a href="global.html#get_player">get_player</a></li><li><a href="global.html#get_socket">get_socket</a></li><li><a href="global.html#get_target">get_target</a></li><li><a href="global.html#get_target_of">get_target_of</a></li><li><a href="global.html#get_targeted_monster">get_targeted_monster</a></li><li><a href="global.html#handle_command">handle_command</a></li><li><a href="global.html#handle_death">handle_death</a></li><li><a href="global.html#heal">heal</a></li><li><a href="global.html#in_attack_range">in_attack_range</a></li><li><a href="global.html#is_moving">is_moving</a></li><li><a href="global.html#is_transporting">is_transporting</a></li><li><a href="global.html#item_grade">item_grade</a></li><li><a href="global.html#item_properties">item_properties</a></li><li><a href="global.html#item_value">item_value</a></li><li><a href="global.html#load_code">load_code</a></li><li><a href="global.html#loot">loot</a></li><li><a href="global.html#move">move</a></li><li><a href="global.html#mssince">mssince</a></li><li><a href="global.html#on_cm">on_cm</a></li><li><a href="global.html#on_combined_damage">on_combined_damage</a></li><li><a href="global.html#on_destroy">on_destroy</a></li><li><a href="global.html#on_disappear">on_disappear</a></li><li><a href="global.html#on_draw">on_draw</a></li><li><a href="global.html#on_party_invite">on_party_invite</a></li><li><a href="global.html#on_party_request">on_party_request</a></li><li><a href="global.html#respawn">respawn</a></li><li><a href="global.html#say">say</a></li><li><a href="global.html#sell">sell</a></li><li><a href="global.html#send_cm">send_cm</a></li><li><a href="global.html#send_gold">send_gold</a></li><li><a href="global.html#send_item">send_item</a></li><li><a href="global.html#send_party_invite">send_party_invite</a></li><li><a href="global.html#send_party_request">send_party_request</a></li><li><a href="global.html#set_message">set_message</a></li><li><a href="global.html#shift">shift</a></li><li><a href="global.html#show_json">show_json</a></li><li><a href="global.html#smart_move">smart_move</a></li><li><a href="global.html#smart_move_logic">smart_move_logic</a></li><li><a href="global.html#smooth_path">smooth_path</a></li><li><a href="global.html#start_pathfinding">start_pathfinding</a></li><li><a href="global.html#stop">stop</a></li><li><a href="global.html#trade">trade</a></li><li><a href="global.html#trade_buy">trade_buy</a></li><li><a href="global.html#u_item">u_item</a></li><li><a href="global.html#upgrade">upgrade</a></li><li><a href="global.html#use">use</a></li><li><a href="global.html#use_hp_or_mp">use_hp_or_mp</a></li><li><a href="global.html#use_skill">use_skill</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.4.3</a> on Wed Jun 14 2017 10:01:49 GMT+0200 (CEST)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
