@@ -1,14 +1,63 @@
 //#NOTE: If you want to see a new function/feature, just request it at: https://github.com/kaansoral/adventureland/issues
+
 var character = parent.character;
 var G = parent.G; // Game data
 var safeties = true;
+
+server = {
+    mode: parent.gameplay, // "normal", "hardcore", "test"
+    pvp: parent.is_pvp, // true for PVP servers, use is_pvp() for maps
+    region: parent.server_region, // "EU", "US", "ASIA"
+    id: parent.server_identifier, // "I", "II", "PVP", "TEST"
+}
+
+game = {
+    platform: parent.is_electron && "electron" || "web", // "electron" for Steam, Mac clients, "web" for https://adventure.land
+    graphics: !parent.no_graphics, // if game.graphics is false, don't draw stuff to the game in your Code
+    html: !parent.no_html, // if game.html is false, this character is loaded in [CODE] mode
+}
+
+function start_character(name, code_slot_or_name) {
+    // Loads a character in [CODE] mode
+    parent.start_character_runner(name, code_slot_or_name)
+}
+
+function command_character(name, code_snippet) {
+    // Commands the character in [CODE] mode
+    parent.character_code_eval(name, code_snippet)
+}
+
+function get_active_characters() {
+    // States: "self", "starting","loading", "active", "code"
+    // Example: {"Me":"self","Protector":"loading"}
+    return parent.get_active_characters()
+}
+
+function is_pvp() {
+    return G.maps[character.map].pvp || server.is_pvp;
+}
+
+function is_npc(entity) {
+    if (entity && (entity.npc || entity.type == "npc")) return true;
+}
+
+function is_monster(entity) {
+    if (entity && entity.type == "monster") return true;
+}
+
+function is_player(entity) {
+    if (entity && entity.type == "character" && !entity.npc) return true;
+}
+
+function is_character(e) {
+    return is_player(e);
+}
 
 /**
  * Activates an item, likely a booster, in the num-th inventory slot
  * @param {number} num number of Inventory slot
  */
-function activate(num)
-{
+function activate(num) {
     parent.activate(num);
 }
 
@@ -19,15 +68,16 @@ function activate(num)
  * @param {number} num   - Position of Inventory Slot starting from 0
  * @param {string} name  - name of the Item
  */
-function shift(num, name)
-{
+function shift(num, name) {
     parent.shift(num, name);
 }
+
 /**
  * (WIP) Check if the cooldown of a class skill has passed
  * @param {string} name - name of skill
  * @returns {boolean}   - true of cooldown has passed
  */
+
 function can_use(name) // work in progress, can be used to check cooldowns of class skills [02/02/17]
 {
     return parent.can_use(name);
@@ -89,6 +139,7 @@ function item_grade(item) // example: item_grade(character.items[0])
     if (!item || !item.name) return -1;
     return calculate_item_grade(G.items[item.name], item);
 }
+
 /**
  * Returns how much the item is worth in gold
  * @param {Gear|Consumables} item
@@ -99,6 +150,17 @@ function item_value(item) // example: item_value(character.items[0])
     if (!item || !item.name) return 0;
     return calculate_item_value(item);
 }
+
+
+function is_paused() {
+    return parent.paused;
+}
+
+function pause() // Pauses the Graphics
+{
+    parent.pause();
+}
+
 /**
  * Return Socket.IO socket, this is the Object which the game uses to communicate with the server
  * @returns {socket}
@@ -106,6 +168,7 @@ function item_value(item) // example: item_value(character.items[0])
 function get_socket() {
     return parent.socket;
 }
+
 /**
  * Returns current map the player is on
  * @returns {Map} current map the player is on
@@ -113,16 +176,20 @@ function get_socket() {
 function get_map() {
     return parent.G.maps[parent.current_map];
 }
+
 /**
- * When CODE is active uses a window in the bottom right hand corner to display a status messages
+ * When CODE is active set uses a window in the bottom right hand corner to display a status messages
  * The window is pretty small so keep it short.
  * @param {string} text the text that should be displayed
  * @param {string} [color] the color in which the text should be displayed
  */
 function set_message(text, color) {
     if (color) text = "<span style='color: " + color + "'>" + text + "</span>";
-    $('#gg').html(text);
+
+    if (!game.html) parent.set_status(text);
+    else $('#gg').html(text);
 }
+
 /**
  * Uses the game log to print out a message
  * @param {string} message the message to print
@@ -132,6 +199,7 @@ function game_log(message, color) {
     if (!color) color = "#51D2E1";
     parent.add_log(message, color);
 }
+
 /**
  * Returns Entity which the Entity is targeting
  * @param {Monster} entity The Entity of which to fetch the target
@@ -153,7 +221,8 @@ function get_target_of(entity) // .target is a Name for Monsters and `id` for Pl
  * @returns {Monster|Player|null} - Returns the current target Entity of the character
  */
 function get_target() {
-    return parent.ctarget;
+    if (parent.ctarget && !parent.ctarget.dead) return parent.ctarget;
+    return null;
 }
 
 /**
@@ -190,10 +259,15 @@ function change_target(target, send) {
  * @param {number} [y] The y coordinate of the position
  * @returns {boolean} Whether or not there is a clear path the the coordinates
  */
-function can_move_to(x,y)
-{
-    if(is_object(x)) y=x.real_y,x=x.real_x;
-    return can_move({map:character.map,x:character.real_x,y:character.real_y,going_x:x,going_y:y});
+
+function can_move_to(x, y) {
+    if (is_object(x)) y = x.real_y, x = x.real_x;
+    return can_move({map: character.map, x: character.real_x, y: character.real_y, going_x: x, going_y: y});
+}
+
+function xmove(x, y) {
+    if (can_move_to(x, y)) move(x, y);
+    else smart_move({x: x, y: y});
 }
 
 /**
@@ -216,7 +290,8 @@ function can_attack(target) // also works for priests/heal
 {
     // is_disabled function checks .rip and .stunned
     if (!target) return false;
-    return (!parent.is_disabled(character) && in_attack_range(target) && new Date() >= parent.next_attack);
+    if (!parent.is_disabled(character) && in_attack_range(target) && new Date() >= parent.next_attack) return true;
+    return false;
 }
 
 /**
@@ -226,6 +301,7 @@ function can_attack(target) // also works for priests/heal
  * @returns {boolean} True if the target can be healed
  */
 function can_heal(target) {
+    if (is_monster(target)) return false;
     return can_attack(target);
 }
 
@@ -261,8 +337,10 @@ function attack(target) {
         game_log("Nothing to attack()", "gray");
         return;
     }
-    if (target.type == "character") parent.player_attack.call(target);
-    else parent.monster_attack.call(target);
+    if (target.type == "character")
+        parent.player_attack.call(target);
+    else
+        parent.monster_attack.call(target);
     last_attack = new Date();
 }
 
@@ -279,6 +357,7 @@ function heal(target) {
     parent.player_heal.call(target);
     last_attack = new Date();
 }
+
 /**
  * Buys items from NPC. The NPC has to be near enough to be able to buy from him. Usually 400px
  * @param {String} name      - Name of the Item
@@ -288,6 +367,7 @@ function buy(name, quantity) //item names can be spotted from show_json(characte
 {
     parent.buy(name, quantity);
 }
+
 /**
  * Tries to sell the Item in the num-th inventory slot to an npc.
  * @param {number} num       - Inventory slot
@@ -297,6 +377,7 @@ function sell(num, quantity) //sell an item from character.items by it's order -
 {
     parent.sell(num, quantity);
 }
+
 /**
  * Equips the Item in the num-th inventory Slot starting from 0.
  * @param {number} num - The slot the items is currently in
@@ -304,6 +385,12 @@ function sell(num, quantity) //sell an item from character.items by it's order -
 function equip(num) {
     parent.socket.emit("equip", {num: num});
 }
+
+function unequip(slot) // show_json(character.slots) => to see slot options
+{
+    parent.socket.emit("unequip", {slot: slot});
+}
+
 /**
  * Puts an item up for sale
  * @param {number} num      - The slot the item is in
@@ -314,6 +401,7 @@ function trade(num, trade_slot, price) // where trade_slot is 1 to 16 - example,
 {
     parent.trade("trade" + trade_slot, num, price);
 }
+
 /**
  *
  * @param {Player} target     - The player entity you want to buy from.
@@ -337,6 +425,7 @@ function upgrade(item_num, scroll_num, offering_num) //number of the item and sc
     parent.u_offering = offering_num;
     parent.upgrade();
 }
+
 /**
  * Uses the upgrade npc to combine jewelery
  * Combining works by taking 3 jewelery items of the same type and a scroll
@@ -356,6 +445,15 @@ function compound(item0, item1, item2, scroll_num, offering_num) // for example 
     parent.c_offering = offering_num;
     parent.compound();
 }
+
+function craft(i0, i1, i2, i3, i4, i5, i6, i7, i8)
+// for example -> craft(null,0,null,null,1,null,null,2,null)
+// sends 3 items to be crafted, the 0th, 1st, 2nd items in your inventory, and it places them all in the middle column of crafting
+{
+    parent.cr_items = [i0, i1, i2, i3, i4, i5, i6, i7, i8];
+    parent.craft();
+}
+
 /**
  * Tries to exchange an item in a specific inventory slot. This function also works with quest items and when multiple items are exchanged at once e.g. seashells.
  * @param {number} item_num - Inventory slot
@@ -373,6 +471,11 @@ function exchange(item_num) {
 function say(message) // please use responsibly, thank you! :)
 {
     parent.say(message, 1);
+}
+
+function pm(name, message) // please use MORE responsibly, thank you! :)
+{
+    parent.private_say(name, message, 0)
 }
 
 /**
@@ -397,14 +500,17 @@ function move(x, y) {
         m: character.m
     });
 }
+
 /**
  * A debug Command which opens a Window and shows the json representation of the Object.
  * @param {Object} e - The Object you like to inspect
  */
+
 function show_json(e) // renders the object as json inside the game
 {
     parent.show_json(parent.game_stringify(e, 2));
 }
+
 /**
  * Returns the entity of a player, only works when the player is visible.
  * @param {String} name - The name of the character
@@ -417,6 +523,7 @@ function get_player(name) // returns the player by name, if the player is within
     for (i in entities) if (entities[i].type == "character" && entities[i].name == name) target = entities[i];
     return target;
 }
+
 /**
  * Get nearest Monster out of the entities array that meets certain criteria and returns it.
  * @param {Object} args
@@ -454,6 +561,7 @@ function get_nearest_monster(args) {
     }
     return target;
 }
+
 /**
  * Get nearest Hostile. This function is manly for finding hostile players in your proximity
  * @param {Object} args
@@ -463,6 +571,8 @@ function get_nearest_monster(args) {
  */
 function get_nearest_hostile(args) // mainly as an example [08/02/17]
 {
+
+
     var min_d = 999999, target = null;
 
     if (!args) args = {};
@@ -480,6 +590,7 @@ function get_nearest_hostile(args) // mainly as an example [08/02/17]
     }
     return target;
 }
+
 /**
  * Uses a simple algorithm to decide weather to use a mana or health potion.
  * Tries to max out the health and mana.
@@ -496,6 +607,7 @@ function use_hp_or_mp() {
     else if (character.mp < character.max_mp) use('use_mp'), used = true;
     if (used) last_potion = new Date();
 }
+
 /**
  * Find the first 2 chests and opens them
  */
@@ -540,6 +652,7 @@ function send_item(receiver, num, quantity) {
  * Destroys an item in the num-th Inventory slot
  * @param {number} num - The Inventory slot of the Item [0,41].
  */
+
 function destroy_item(num) // num: 0 to 41
 {
     parent.socket.emit("destroy", {num: num});
@@ -603,6 +716,7 @@ function handle_death() {
 
     return -1;
 }
+
 /**
  * @module callback
  * You can implement your own chat commands with this function.
@@ -616,6 +730,7 @@ function handle_command(command, args) // command's are things like "/party" tha
     // return true;
     return -1;
 }
+
 /**
  *
  * Send CODE messages to the characters, of course it only works if both characters have CODE active.
@@ -627,6 +742,7 @@ function send_cm(to, data) {
     // data: JSON object
     parent.send_code_message(to, data);
 }
+
 /**
  * @module callback
  * @param {string} name - Sender of Code Message
@@ -635,6 +751,7 @@ function send_cm(to, data) {
 function on_cm(name, data) {
     game_log("Received a code message from: " + name);
 }
+
 /**
  * @module callback
  * This function gets called whenever an entity disappears
@@ -644,15 +761,16 @@ function on_cm(name, data) {
 function on_disappear(entity, data) {
     // game_log("disappear: "+entity.id+" "+JSON.stringify(data));
 }
+
 /**
  * @module callback
  * When multiple characters stay in the same spot, they receive combined damage, this function gets called whenever a monster deals combined damage.
  * Override this function in CODE to react to it
  */
-function on_combined_damage()
-{
+function on_combined_damage() {
     // move(character.real_x+5,character.real_y);
 }
+
 /**
  * @module callback
  * Someone is inviting you to a party
@@ -662,36 +780,46 @@ function on_party_invite(name) // called by the inviter's name
 {
     // accept_party_invite(name)
 }
+
 /**
  * @module callbacks
  * Someone requesting to join your existing party
  * @param {string} name  - The name of the player
  */
-function on_party_request(name)
-{
+function on_party_request(name) {
     // accept_party_request(name)
 }
+
 /**
  * @module callbacks
  * Called just before the CODE is destroyed.
  * Can be used to remove event listeners or revert states.
  */
-function on_destroy()
-{
+function on_destroy() {
     clear_drawings();
 }
+
 /**
  * @module callbacks
  * The game calls this function at the best place in each game draw frame, so if you are playing the game at 60fps, this function gets called 60 times per second
  */
-function on_draw()
-{
+function on_draw() {
 
 }
+
+function on_game_event(event) {
+    if (event.name == "pinkgoo") {
+        // start searching for the "Love Goo" of the Valentine's Day event
+    }
+    if (event.name == "goblin") {
+        // start searching for the "Sneaky Goblin"
+    }
+}
+
 /**
  * @module callback
  * Override this function to listen for game events
- * @callback 
+ * @callback
  * @param event {Object}
  * @param event.name {string} name of the event e.g. pinkgoo or goblin.
  */
@@ -706,6 +834,8 @@ function on_game_event(event) {
 
 var PIXI = parent.PIXI; // for drawing stuff into the game
 var drawings = parent.drawings;
+var buttons = parent.code_buttons;
+
 /**
  * @module graphics
  * Documentation: [https://pixijs.github.io/docs/PIXI.Graphics.html]{@link https://pixijs.github.io/docs/PIXI.Graphics.html}
@@ -732,6 +862,7 @@ function draw_line(x, y, x2, y2, size, color) {
     parent.map.addChild(e); //e.destroy() would remove it, if you draw too many things and leave them there, it will likely bring the game to a halt
     return e;
 }
+
 /**
  * @module graphics
  * Documentation: [https://pixijs.github.io/docs/PIXI.Graphics.html]{@link https://pixijs.github.io/docs/PIXI.Graphics.html}
@@ -754,6 +885,8 @@ function draw_circle(x, y, radius, size, color) {
     parent.map.addChild(e);
     return e;
 }
+
+
 /**
  * @module graphics
  *  Clears drawings added with draw_circle and draw_line functions from the screen.
@@ -768,22 +901,82 @@ function clear_drawings() {
     drawings = parent.drawings = [];
 }
 
-var game = {
-    last: 0,
-    callbacks: [],
-    on: function (event, f) {
+function add_top_button(id, value, fn) {
+    if (!buttons[id]) {
+        buttons[id] = {
+            value: value, fn: function () {
+            }, place: "top"
+        };
+        parent.$(".codebuttons").append("<div class='gamebutton codebutton" + id + "' data-id='" + id + "' onclick='code_button_click(this)'>BUTTON</div> ")
+    }
+    if (fn) set_button_onclick(id, fn)
+    if (value) set_button_value(id, value);
+}
 
-    },
-    once: function (event, f) {
+function set_button_value(id, value) {
+    parent.$(".codebutton" + id).html(value);
+}
 
-    },
-    remove: function (num) {
+function set_button_color(id, color) {
+    parent.$(".codebutton" + id).css("border-color", color);
+}
 
-    },
-    trigger: function (event, args) {
+function set_button_onclick(id, fn) {
+    buttons[id].fn = fn;
+}
 
-    },
+function clear_buttons() {
+    parent.$('.codebuttons').html("");
+    parent.$('.codebbuttons').html("");
+    buttons = parent.code_buttons = {};
+}
+
+function auto_reload(value) {
+    // Configures the game to auto reload in case you disconnect due to rare network issues
+    if (value === false) parent.auto_reload = "off";
+    else if (value == "auto") parent.auto_reload = "auto"; // code or merchant stand
+    else parent.auto_reload = "on"; // always reload
+}
+
+game.listeners = [];
+game.on = function (event, f) {
+    var def = {f: f, id: randomStr(30), event: event};
+    game.listeners.push(def);
+    return def.id;
 };
+game.once = function (event, f) {
+    var def = {f: f, id: randomStr(30), event: event, once: true};
+    game.listeners.push(def);
+    return def.id;
+};
+game.remove = function (id) {
+    for (var i = 0; i < game.listeners.length; i++) {
+        if (game.listeners[i].id == id) {
+            game.listeners.splice(i, 1);
+            break;
+        }
+    }
+};
+game.trigger = function (event, args) {
+    var to_delete = [];
+    for (var i = 0; i < game.listeners.length; i++) {
+        var l = game.listeners[i];
+        if (l.event == event || l.event == "all") {
+            try {
+                l.f(args, event);
+            }
+            catch (e) {
+                game_log("Listener Exception (" + l.event + ") " + e, code_color);
+            }
+            if (l.once || l.f && l.f.delete) to_delete.push(l.id);
+        }
+    }
+    // game_log(to_delete);
+};
+
+function trigger_event(name, data) {
+    game.trigger(name, data);
+}
 
 function preview_item(def, args) {
     //PLANNED Improvements:
@@ -813,6 +1006,36 @@ function preview_item(def, args) {
     parent.show_modal(html);
     parent.prop_cache = {};
 }
+
+function preview_item(def, args) {
+    //PLANNED Improvements:
+    //- Importing a custom thumbnail
+    //- Drafting custom item abilities
+    // Email me or create an issue if you need these features (if you want to suggest new items) [20/03/17]
+    if (!args) args = {};
+    var html = "";
+    var styles = "vertical-align: top; margin: 10px";
+    var name = def.id || args.id || "staff";
+    parent.prop_cache = {}; // bust the item cache
+    if (def.compound || def.upgrade) {
+        for (var level = 0; level <= 10; level++)
+            html += parent.render_item("html", {
+                item: def,
+                name: name,
+                styles: styles,
+                actual: {name: name, level: level},
+                sell: true,
+                thumbnail: args.thumbnail
+            });
+    }
+    else {
+        html += parent.render_item("html", {item: def, name: name, thumbnail: args.thumbnail});
+    }
+    html += "<div style='margin: 10px; border: 5px solid gray; padding: 4px'>" + parent.json_to_html(def) + "</div>";
+    parent.show_modal(html);
+    parent.prop_cache = {};
+}
+
 /**
  *
  * @param {string} name
@@ -847,6 +1070,7 @@ var smart = {
     },
     flags: {}
 };
+
 /**
  * @module path_finding
  * smart_move uses a Breadth-first search path finding algorithm to find the shortest path
@@ -863,8 +1087,7 @@ var smart = {
  * @param {number} destination.y - Destination coordinates
  * @param {function} on_done -  Function that gets executed once the path finding finishes.
  */
-function smart_move(destination, on_done)
-{
+function smart_move(destination, on_done) {
     smart.map = "";
     if (is_string(destination)) destination = {to: destination};
     if ("x" in destination) {
@@ -879,9 +1102,7 @@ function smart_move(destination, on_done)
         if (G.monsters[destination.to]) {
             for (var name in G.maps)
                 (G.maps[name].monsters || []).forEach(function (pack) {
-                    if (pack.type != destination.to || G.maps[name].ignore) return;
-
-                    //Monsters like the phoenix or mvampire have random spawn locations we want to check for the accordingly
+                    if (pack.type != destination.to || G.maps[name].ignore || G.maps[name].instance) return;
                     if (pack.boundaries) // boundaries: for phoenix, mvampire
                     {
                         //Every time we search for the phoenix we will try a different location so if nobody kill it we will eventually find it
@@ -930,9 +1151,10 @@ function smart_move(destination, on_done)
         }
     }
     else smart.on_done = on_done || function () {
-        };
+    };
     console.log(smart.map + " " + smart.x + " " + smart.y);
 }
+
 
 /**
  * @module path_finding
@@ -946,6 +1168,7 @@ function stop() {
 
 var queue = [], visited = {}, start = 0, best = null;
 var moves = [[0, 15], [0, -15], [15, 0], [-15, 0]];
+
 /**
  * @module path_finding
  * @param index
@@ -955,6 +1178,7 @@ function plot(index) {
     plot(queue[index].i); // Recursively back-tracks the path we came from
     smart.plot.push(queue[index]);
 }
+
 /**
  * @module path_finding
  * @param node
@@ -967,6 +1191,7 @@ function qpush(node) {
     queue.push(node);
     visited[node.map + "-" + node.x + "-" + node.y] = true;
 }
+
 /**
  * @module path_finding
  * Internal smart_move function
@@ -999,10 +1224,9 @@ function smooth_path() {
  */
 function bfs() {
     var timer = new Date(), result = null, optimal = true;
-
     while (start < queue.length) {
         var current = queue[start];
-        if (current.map == smart.map) { //Is same MAP
+        if (current.map == smart.map) {
             smart.flags.map = true;
             if (abs(current.x - smart.x) + abs(current.y - smart.y) < smart.edge) {
                 result = start;
@@ -1060,8 +1284,7 @@ function bfs() {
             var new_x = parseInt(current.x + m[0]), new_y = parseInt(current.y + m[1]);
             // utilise can_move - game itself uses can_move too - smart_move is slow as can_move checks all the lines at each step
             if (can_move({map: current.map, x: current.x, y: current.y, going_x: new_x, going_y: new_y}))
-                console.log(new_x, new_y);
-            qpush({map: current.map, x: new_x, y: new_y});
+                qpush({map: current.map, x: new_x, y: new_y});
         });
 
         start++;
@@ -1084,6 +1307,7 @@ function bfs() {
         parent.d_text("Yes!", character, {color: "#58D685"});
     }
 }
+
 
 /**
  * @module path_finding
@@ -1115,6 +1339,10 @@ function smart_move_logic() {
         start_pathfinding();
     }
     else if (!smart.found) {
+        if (Math.random() < 0.1) {
+            move(character.real_x + Math.random() * 0.0002 - 0.0001, character.real_y + Math.random() * 0.0002 - 0.0001);
+            parent.d_text(shuffle(["Hmm", "...", "???", "Definitely left", "No right!", "Is it?", "I can do this!", "I think ...", "What If", "Should be", "I'm Sure", "Nope", "Wait a min!", "Oh my"])[0], character, {color: shuffle(["#68B3D1", "#D06F99", "#6ED5A3", "#D2CF5A"])[0]});
+        }
         continue_pathfinding();
     }
     else if (!character.moving && can_walk(character) && !is_transporting(character)) {
@@ -1146,6 +1374,36 @@ function smart_move_logic() {
 setInterval(function () {
     smart_move_logic();
 }, 80);
+
+function doneify(fn, s_event, f_event) {
+    return function (a, b, c, d, e, f) {
+        var rxd = randomStr(30);
+        parent.rxd = rxd;
+        fn(a, b, c, d, e, f);
+        return {
+            done: function (callback) {
+                game.once(s_event, function (event) {
+                    if (event.rxd == rxd) {
+                        callback(true, event);
+                        this.delete = true; // remove the .on listener
+                        parent.rxd = null;
+                    }
+                    // else game_log("rxd_mismatch");
+                });
+                game.once(f_event, function (event) {
+                    if (event.rxd == rxd) {
+                        callback(false, event);
+                        this.delete = true; // remove the .on listener
+                        parent.rxd = null;
+                    }
+                    // else game_log("rxd_mismatch");
+                });
+            }
+        };
+    };
+}
+
+buy = doneify(buy, "buy_success", "buy_fail");
 
 //safety flags
 var last_loot = new Date(0);

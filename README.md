@@ -4,11 +4,11 @@ Currently maintained by NexusNull.
 This documentation is currently unofficial and unfinished if you find mistakes kindly point them out so I can fix them.
 The source code is property of Kaan Soral.
 
-### [Player](https://fansana.github.io/adventureland/Player.html)
-^ Click for detailed Info
+[NexusNull's Unofficial But Awesome Documentation](https://nexusnull.github.io/adventureland/index.html) [Functions](https://nexusnull.github.io/adventureland/global.html)
+
 * Properties
- * .real_x (10x of the game's X)
- * .real_y (10x of the game's Y)
+ * .real_x
+ * .real_y
  * .hp / .max_hp
  * .mp / .max_mp
  * .xp / .max_xp
@@ -61,6 +61,7 @@ Here is a list of some children of G and an explanation to them.
 
 ### Provided Functions
 
+
 A more thoroughgoing list can be found [here](https://fansana.github.io/adventureland/index.html). 
 
 #### move( xCoordinates , yCoordinates )
@@ -80,6 +81,7 @@ Uses a very basic logic to either use hp or mp pot
 Returns your current target
 
 #### get_target_of(entity)
+
 Returns the target entity for both players and monsters
 
 Suggestion for Fun: Code your characters to target and attack what you are targeting, even if you don't engage a monster, you can make your characters (or side-characters) engage by just clicking :)
@@ -88,6 +90,7 @@ Suggestion for Fun: Code your characters to target and attack what you are targe
 Targets the player or monster
 
 #### loot()
+
 Tries to loot the chests on the map. If there are multiple it will only try to open 2.
 
 #### attack(target)
@@ -109,7 +112,8 @@ Sets the IFrame message, the one in the right bottom corner.
 There are more functions, examples in runner_functions.js and on the game's main CODE
 
 ### Future Plans for Adventure land
-As the game progresses, the CODE feature will refine, you will be able to create/save your own code in-game, and hopefully much much more
+
+As the game progresses, the CODE feature will refine, you will be able to create/save your own code in-game, and hopefully much much more.
 
 With the introduction of PVP, Trade, Events and similar stuff, the CODE capabilities should get pretty interesting
 
