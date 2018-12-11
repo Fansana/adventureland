@@ -218,23 +218,25 @@
 /**
  * @typedef {Object} ItemStats
  * @description Every item may or may not contain any number or combination of these attributes. It is probably a good idea to check if they exist first.
- * @property {number} apiercing
- * @property {number} armor - Reduces the incoming physical damage by 1% for every 10 armor points.
- * @property {number} attack
- * @property {number} attr0
- * @property {number} attr1
+ * @property {number} apiercing  - Subtract this number from target's armor to get the number used in damage calc.
+ * @property {number} armor      - Reduces the incoming physical damage by 1% for every 10 armor points.
+ * @property {number} damage     - Proportional increase in damage dealt.
+ * @property {number} attack     - Depreceated.
+ * @property {number} attr0      - Reserved for items that are required to use a skill.
+ * @property {number} attr1      - Reserved for various items that modify character behavior.
  * @property {number} crit       - Chance to crit and do double damage
- * @property {number} dreturn
+ * @property {number} dreturn    - Percent damage returned to melee attackers.
  * @property {number} evasion    - Chance to evade the attack and negate all damage
- * @property {number} gold
- * @property {number} hp
+ * @property {number} gold       - The percent gold increase given from this item.
+ * @property {number} hp         - The ammount of HP to add to the character.
  * @property {number} level      - The item level
- * @property {number} lifesteal
- * @property {number} mp
- * @property {number} range
- * @property {number} reflection
+ * @property {number} lifesteal  - Percent lifesteal. When you deal damage, you gain that percent of the damage you dealt as HP.
+ * @property {number} mp         - The amount of mana to be added.
+ * @property {number} range      - The range added to your character when you attack.
+ * @property {number} reflection - Chance to reflect a magic attack back at the attacker.
  * @property {number} resistance - Reduces the incoming magical damage by 1% for every 10 resistance points.
- * @property {number} rpiercing
+ * @property {number} frequency  - Higher frequency means faster attack.
+ * @property {number} rpiercing  - Subtracts this number from the target's resistance to get the number used for damange calc.
  * @property {number} speed      - Adds the the character speed, 1 point equals one additional pixel walked per second.
  * @property {number} stat       - Can be converted to dex, int, str or vit with the corresponding scrolls
  * @property {number} dex        - Dexterity: Increases the attack speed.
