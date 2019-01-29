@@ -4,7 +4,12 @@ Currently maintained by NexusNull.
 This documentation is currently unofficial and unfinished if you find mistakes kindly point them out so I can fix them.
 The source code is property of Kaan Soral.
 
-### [Player](https://fansana.github.io/adventureland/Player.html)
+# Create documentation from source
+`
+jsdoc ./ -c conf.json
+`
+
+### [Player](https://nexusnull.github.io/adventureland/Player.html)
 ^ Click for detailed Info
 * Properties
  * .real_x (10x of the game's X)
@@ -14,7 +19,7 @@ The source code is property of Kaan Soral.
  * .xp / .max_xp
  * .party / .name / .rip / .afk / .code / .target / .id / .moving + more
 
-### [Character](https://fansana.github.io/adventureland/Character.html)
+### [Character](https://nexusnull.github.io/adventureland/Character.html)
 ^ Click for detailed Info
 * Properties
  * .real_x (10x of the game's X)
@@ -24,7 +29,7 @@ The source code is property of Kaan Soral.
  * .xp / .max_xp
  * .party / .name / .rip / .afk / .code / .target / .id / .moving + more
 
-### [Monster](https://fansana.github.io/adventureland/Monster.html) (Incomplete)
+### [Monster](https://nexusnull.github.io/adventureland/Monster.html) (Incomplete)
 ^ Click for detailed Info
 * Properties
  * .real_x (10x of the game's X)
@@ -61,7 +66,7 @@ Here is a list of some children of G and an explanation to them.
 
 ### Provided Functions
 
-A more thoroughgoing list can be found [here](https://fansana.github.io/adventureland/index.html). 
+A more thoroughgoing list can be found [here](https://nexusnull.github.io/adventureland/index.html).
 
 #### move( xCoordinates , yCoordinates )
 This will make the character start walking to into the direction of the passed coordinates
@@ -121,7 +126,7 @@ A good solution to this problem is to open a separate Window where to run the ga
 Follow the rules of the Game to avoid unnecessary punishment.
 Also try not to overload the server with too many actions, running the code in an 1/4 second Interval is good practice.
 Keep in mind that CODE is currently an early prototype and may change at any time.
-If you have questions create an [issue](https://github.com/Fansana/adventureland/issues/new) on github or ask on [Discord](https://discord.gg/hTpwYFJ).
+If you have questions create an [issue](https://github.com/NexusNull/adventureland/issues/new) on github or ask on [Discord](https://discord.gg/hTpwYFJ).
 Most importantly have fun programming.
 
 

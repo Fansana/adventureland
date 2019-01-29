@@ -1,66 +1,56 @@
 var c_version = 2;
-var EPS = 1e-16;
+var EPS = 1e-8;
+var ZEPS = 1e-8;
+var REPS = ((Number && Number.EPSILON) || EPS);
 var CINF = 999999999999999;
 var colors = {
-    range: '#93A6A2',
-    armor: '#5C5D5E',
-    resistance: '#6A5598',
-    attack: '#DB2900',
-    str: '#F07F2F',
-    'int': '#3E6EED',
-    dex: '#44B75C',
-    speed: '#36B89E',
-    cash: '#5DAC40',
-    hp: '#FF2E46',
-    mp: '#3a62ce',
-    gold: 'gold',
-    male: '#43A1C6',
-    female: '#C06C9B',
-    server_success: '#85C76B',
-    ability: '#ff9100',
-    xmas: '#C82F17',
-    xmasgreen: '#33BF6D',
-    codeblue: '#32A3B0',
-    codepink: '#E13758',
-    A: '#39BB54',
-    B: '#DB37A3',
-    npc_white: '#EBECEE',
-    white_positive: '#C3FFC0',
-    white_negative: '#FFDBDC',
+    range: "#93A6A2",
+    armor: "#5C5D5E",
+    resistance: "#6A5598",
+    attack: "#DB2900",
+    str: "#F07F2F",
+    "int": "#3E6EED",
+    dex: "#44B75C",
+    speed: "#36B89E",
+    cash: "#5DAC40",
+    hp: "#FF2E46",
+    mp: "#3a62ce",
+    stat_xp: "#4570B1",
+    party_xp: "#AD73E0",
+    xp: "#CBFFFF",
+    luck: "#2A9A3D",
+    gold: "gold",
+    male: "#43A1C6",
+    female: "#C06C9B",
+    server_success: "#85C76B",
+    server_failure: "#C7302C",
+    poison: "#41834A",
+    ability: "#ff9100",
+    xmas: "#C82F17",
+    xmasgreen: "#33BF6D",
+    codeblue: "#32A3B0",
+    codepink: "#E13758",
+    A: "#39BB54",
+    B: "#DB37A3",
+    npc_white: "#EBECEE",
+    white_positive: "#C3FFC0",
+    white_negative: "#FFDBDC",
+    serious_red: "#BC0004",
+    serious_green: "#428727",
+    heal: "#EE4D93",
 };
-var trade_slots = [],
-    check_slots = [
-        'elixir'
-    ];
+var trade_slots = []
+    , check_slots = ["elixir"];
 for (var i = 1; i <= 16; i++) {
-    trade_slots.push('trade' + i),
-        check_slots.push('trade' + i)
+    trade_slots.push("trade" + i),
+        check_slots.push("trade" + i)
 }
-var character_slots = [
-    'ring1',
-    'ring2',
-    'earring1',
-    'earring2',
-    'belt',
-    'mainhand',
-    'offhand',
-    'helmet',
-    'chest',
-    'pants',
-    'shoes',
-    'gloves',
-    'amulet',
-    'orb',
-    'elixir',
-    'cape'
-];
-character.from_x
-var booster_items = [
-    'xpbooster',
-    'luckbooster',
-    'goldbooster'
-];
+var bank_packs = ["items0", "items1", "items2", "items3", "items4", "items5", "items6", "items7"];
+var character_slots = ["ring1", "ring2", "earring1", "earring2", "belt", "mainhand", "offhand", "helmet", "chest", "pants", "shoes", "gloves", "amulet", "orb", "elixir", "cape"];
+var booster_items = ["xpbooster", "luckbooster", "goldbooster"];
+var can_buy = {};
 function process_game_data() {
+    G.quests = {};
     for (var a in G.monsters) {
         if (G.monsters[a].charge) {
             continue
@@ -86,142 +76,247 @@ function process_game_data() {
                 }
             }
         }
+        G.monsters[a].max_hp = G.monsters[a].hp
     }
-    for (var b in G.maps) {
-        var c = G.maps[b];
-        if (c.ignore) {
+    for (var a in G.maps) {
+        var b = G.maps[a];
+        if (b.ignore) {
             continue
         }
-        c.items = {};
-        c.merchants = [];
-        (c.npcs || []).forEach(function (e) {
-            if (!e.position) {
+        var d = b.data = G.geometry[a];
+        b.items = {};
+        b.merchants = [];
+        b.ref = b.ref || {};
+        (b.npcs || []).forEach(function(f) {
+            if (!f.position) {
                 return
             }
-            var d = {
-                    map: b,
-                    'in': b,
-                    x: e.position[0],
-                    y: e.position[1],
-                    id: e.id
-                },
-                f = G.npcs[e.id];
-            if (f.items) {
-                c.merchants.push(d);
-                f.items.forEach(function (g) {
-                    if (!g || G.items[g].cash) {
+            var e = {
+                map: a,
+                "in": a,
+                x: f.position[0],
+                y: f.position[1],
+                id: f.id
+            }
+                , g = G.npcs[f.id];
+            if (g.items) {
+                b.merchants.push(e);
+                g.items.forEach(function(h) {
+                    if (!h) {
                         return
                     }
-                    c.items[g] = c.items[g] || [];
-                    c.items[g].push(d)
+                    if (G.items[h].cash) {
+                        G.items[h].buy_with_cash = true;
+                        if (!G.items[h].p2w) {
+                            return
+                        }
+                    }
+                    b.items[h] = b.items[h] || [];
+                    b.items[h].push(e);
+                    can_buy[h] = true;
+                    G.items[h].buy = true
                 })
             }
-            if (f.role == 'transport') {
-                c.transporter = d
+            b.ref[f.id] = e;
+            if (g.role == "newupgrade") {
+                b.upgrade = b.compound = e
             }
-            if (f.role == 'newupgrade') {
-                c.upgrade = c.compound = d
+            if (g.role == "exchange") {
+                b.exchange = e
             }
-            if (f.role == 'exchange') {
-                c.exchange = d
-            }
-            if (f.quest) {
-                G['quest_' + f.quest] = d
+            if (g.quest) {
+                G.quests[g.quest] = e
             }
         })
     }
+    for (var c in G.items) {
+        G.items[c].id = c
+    }
     G.maps.desertland.transporter = {
-        'in': 'desertland',
-        map: 'desertland',
-        id: 'transporter',
+        "in": "desertland",
+        map: "desertland",
+        id: "transporter",
         x: 0,
         y: 0
     }
 }
+function test_logic() {
+    for (var a in G.items) {
+        G.items[a].cash = 0;
+        G.items[a].g = G.items[a].g || 1
+    }
+    for (var a in G.monsters) {
+        G.monsters[a].xp = 0
+    }
+}
+function hardcore_logic() {
+    for (var a in G.items) {}
+    G.npcs.premium.items.forEach(function(b) {
+        if (b) {
+            G.items[b].cash = 0;
+            G.items[b].g = parseInt(G.items[b].g * 2)
+        }
+    });
+    G.items.offering.g = parseInt(G.items.offering.g / 2);
+    G.items.xptome.g = 99999999;
+    G.items.computer.g = 1;
+    G.items.gemfragment.e = 10;
+    G.items.leather.e = 5;
+    G.maps.main.monsters.push({
+        type: "wabbit",
+        boundary: [-282, 702, 218, 872],
+        count: 1
+    });
+    G.npcs.scrolls.items[9] = "vitscroll";
+    G.monsters.wabbit.evasion = 96;
+    G.monsters.wabbit.reflection = 96;
+    G.monsters.phoenix.respawn = 1;
+    G.monsters.mvampire.respawn = 1
+}
+function can_stack(e, c, f) {
+    if (e && c && e.name && G.items[e.name].s && e.name == c.name && e.l == c.l && e.q + c.q + (f || 0) < 10000) {
+        return true
+    }
+    return false
+}
+function can_add_item(c, e, a) {
+    if (!a) {
+        a = {}
+    }
+    if (!e.name) {
+        e = create_new_item(e, a.q || 1)
+    }
+    if (is_array(c)) {
+        c = {
+            items: c
+        };
+        for (var b = 0; b < 42; b++) {
+            if (!c.items[b]) {
+                return true
+            }
+        }
+    }
+    if (c.esize) {
+        return true
+    }
+    if (G.items[e.name].s) {
+        for (var b = 0; b < c.items.length; b++) {
+            var d = c.items[b];
+            if (can_stack(d, e)) {
+                return true
+            }
+        }
+    }
+    return false
+}
+function can_add_items(d, b, c) {
+    if (!c) {
+        c = {}
+    }
+    var e = b.length
+        , a = [];
+    if (d.esize + (c.space || 0) >= e) {
+        return true
+    }
+    b.forEach(function(h) {
+        if (G.items[h.name].s) {
+            for (var f = 0; f < d.items.length; f++) {
+                var g = d.items[f];
+                if (can_stack(g, h, a[f] || 0)) {
+                    a[f] = (a[f] || 0) + h.q;
+                    e--
+                }
+            }
+        }
+    });
+    if (d.esize + (c.space || 0) >= e) {
+        return true
+    }
+    return false
+}
+function object_sort(e, d) {
+    function b(h, g) {
+        if (h[0] < g[0]) {
+            return -1
+        }
+        return 1
+    }
+    var c = [];
+    for (var f in e) {
+        c.push([f, e[f]])
+    }
+    if (!d) {
+        c.sort(b)
+    }
+    return c
+}
+function direction_logic(a, b, c) {
+    if (a.moving) {
+        return
+    }
+    a.angle = Math.atan2(get_y(b) - get_y(a), get_x(b) - get_x(a)) * 180 / Math.PI;
+    set_direction(a, c)
+}
 function within_xy_range(c, b) {
-    if (c['in'] != b['in']) {
+    if (c["in"] != b["in"]) {
         return false
     }
     if (!c.vision) {
         return false
     }
-    var a = b.x,
-        f = b.y,
-        e = c.x,
-        d = c.y;
-    if ('real_x' in c) {
-        e = c.real_x,
-            d = c.real_y
-    }
+    var a = get_x(b)
+        , f = get_y(b)
+        , e = get_x(c)
+        , d = get_y(c);
     if (e - c.vision[0] < a && a < e + c.vision[0] && d - c.vision[1] < f && f < d + c.vision[1]) {
         return true
     }
     return false
 }
-function distance(l, j) {
-    if ('width' in l && 'width' in j) {
-        var f = 99999999,
-            n = l.width,
-            e = l.height,
-            d = j.width,
-            h = j.height,
-            g;
-        if ('awidth' in l) {
+function distance(l, j, o) {
+    if (o && l["in"] != j["in"]) {
+        return 99999999
+    }
+    if ("width"in l && "width"in j) {
+        var f = 99999999, n = l.width, e = l.height, d = j.width, h = j.height, g;
+        if ("awidth"in l) {
             n = l.awidth,
                 e = l.aheight
         }
-        if ('awidth' in j) {
+        if ("awidth"in j) {
             d = j.awidth,
                 h = j.aheight
         }
-        var m = l.x,
-            k = l.y,
-            c = j.x,
-            o = j.y;
-        if ('real_x' in l) {
-            m = l.real_x,
-                k = l.real_y
-        }
-        if ('real_y' in j) {
-            c = j.real_x,
-                o = j.real_y
-        }
-        [
-            {
-                x: m - n / 2,
-                y: k
-            },
-            {
-                x: m + n / 2,
-                y: k
-            },
-            {
-                x: m + n / 2,
-                y: k - e
-            },
-            {
-                x: m - n / 2,
-                y: k - e
-            }
-        ].forEach(function (a) {
-            [
-                {
-                    x: c - d / 2,
-                    y: o
-                },
-                {
-                    x: c + d / 2,
-                    y: o
-                },
-                {
-                    x: c + d / 2,
-                    y: o - h
-                },
-                {
-                    x: c - d / 2,
-                    y: o - h
-                }
-            ].forEach(function (b) {
+        var m = get_x(l)
+            , k = get_y(l)
+            , c = get_x(j)
+            , q = get_y(j);
+        [{
+            x: m - n / 2,
+            y: k - e / 2
+        }, {
+            x: m + n / 2,
+            y: k - e / 2
+        }, {
+            x: m,
+            y: k
+        }, {
+            x: m,
+            y: k - e
+        }].forEach(function(a) {
+            [{
+                x: c - d / 2,
+                y: q - h / 2
+            }, {
+                x: c + d / 2,
+                y: q - h / 2
+            }, {
+                x: c,
+                y: q
+            }, {
+                x: c,
+                y: q - h
+            }].forEach(function(b) {
                 g = simple_distance(a, b);
                 if (g < f) {
                     f = g
@@ -253,48 +348,110 @@ function calculate_item_grade(b, a) {
     if (!(b.upgrade || b.compound)) {
         return 0
     }
-    if ((a && a.level || 0) >= (b.grades || [11,
-            12]) [1]) {
+    if ((a && a.level || 0) >= (b.grades || [11, 12])[1]) {
         return 2
     }
-    if ((a && a.level || 0) >= (b.grades || [11,
-            12]) [0]) {
+    if ((a && a.level || 0) >= (b.grades || [11, 12])[0]) {
         return 1
     }
     return 0
 }
-function calculate_item_value(a) {
-    if (!a) {
+function calculate_item_value(c) {
+    if (!c) {
         return 0
     }
-    if (a.gift) {
+    if (c.gift) {
         return 1
     }
-    var c = G.items[a.name],
-        b = c.cash && c.g || c.g * 0.6,
-        d = 1;
-    if (c.compound && a.level) {
-        b *= Math.pow(3.2, a.level)
+    var f = G.items[c.name]
+        , e = f.cash && f.g || f.g * 0.6
+        , h = 1;
+    if (f.compound && c.level) {
+        var g = 0
+            , a = f.grades || [11, 12]
+            , d = 0;
+        for (var b = 1; b <= c.level; b++) {
+            if (b > a[1]) {
+                g = 2
+            } else {
+                if (b > a[0]) {
+                    g = 1
+                }
+            }
+            if (f.cash) {
+                e *= 1.5
+            } else {
+                e *= 3.2
+            }
+            e += G.items["cscroll" + g].g / 2.4
+        }
     }
-    if (c.upgrade && a.level && a.level >= 4) {
-        b *= Math.pow(2, a.level - 4)
+    if (f.upgrade && c.level) {
+        var g = 0
+            , a = f.grades || [11, 12]
+            , d = 0;
+        for (var b = 1; b <= c.level; b++) {
+            if (b > a[1]) {
+                g = 2
+            } else {
+                if (b > a[0]) {
+                    g = 1
+                }
+            }
+            d += G.items["scroll" + g].g / 2;
+            if (b >= 7) {
+                e *= 3,
+                    d *= 1.32
+            } else {
+                if (b == 6) {
+                    e *= 2.4
+                } else {
+                    if (b >= 4) {
+                        e *= 2
+                    }
+                }
+            }
+            if (b == 9) {
+                e *= 2.64,
+                    e += 400000
+            }
+            if (b == 10) {
+                e *= 5
+            }
+            if (b == 11) {
+                e *= 2
+            }
+            if (b == 12) {
+                e *= 1.8
+            }
+        }
+        e += d
     }
-    if (a.expires) {
-        d = 2
+    if (c.expires) {
+        h = 8
     }
-    return round(b / d) || 0
+    return round(e / h) || 0
 }
 var prop_cache = {};
+function damage_multiplier(a) {
+    return min(1.32, max(0.05, 1 - (max(0, min(100, a)) * 0.001 + max(0, min(100, a - 100)) * 0.001 + max(0, min(100, a - 200)) * 0.00095 + max(0, min(100, a - 300)) * 0.0009 + max(0, min(100, a - 400)) * 0.00082 + max(0, min(100, a - 500)) * 0.0007 + max(0, min(100, a - 600)) * 0.0006 + max(0, min(100, a - 700)) * 0.0005 + max(0, a - 800) * 0.0004) + max(0, min(50, 0 - a)) * 0.001 + max(0, min(50, -50 - a)) * 0.00075 + max(0, min(50, -100 - a)) * 0.0005 + max(0, -150 - a) * 0.00025))
+}
 function calculate_item_properties(e, d) {
-    var a = e.name + '|' + d.level + '|' + d.stat_type;
+    var a = e.name + (e.card || "") + "|" + d.level + "|" + d.stat_type + "|" + d.p;
     if (prop_cache[a]) {
         return prop_cache[a]
     }
     var g = {
         gold: 0,
-        'int': 0,
+        luck: 0,
+        xp: 0,
+        "int": 0,
         str: 0,
         dex: 0,
+        charisma: 0,
+        cuteness: 0,
+        awesomeness: 0,
+        bling: 0,
         vit: 0,
         hp: 0,
         mp: 0,
@@ -306,16 +463,18 @@ function calculate_item_properties(e, d) {
         speed: 0,
         level: 0,
         evasion: 0,
+        miss: 0,
         reflection: 0,
         lifesteal: 0,
         attr0: 0,
         attr1: 0,
         rpiercing: 0,
         apiercing: 0,
-        evasion: 0,
-        reflection: 0,
         crit: 0,
         dreturn: 0,
+        frequency: 0,
+        mp_cost: 0,
+        output: 0,
     };
     if (e.upgrade || e.compound) {
         var c = e.upgrade || e.compound;
@@ -336,6 +495,12 @@ function calculate_item_properties(e, d) {
                 if (b == 10) {
                     f = 3
                 }
+                if (b == 11) {
+                    f = 1.25
+                }
+                if (b == 12) {
+                    f = 1.5
+                }
             } else {
                 if (e.compound) {
                     if (b == 5) {
@@ -353,12 +518,12 @@ function calculate_item_properties(e, d) {
                 }
             }
             for (p in c) {
-                if (p == 'stat') {
+                if (p == "stat") {
                     g[p] += round(c[p] * f)
                 } else {
                     g[p] += c[p] * f
                 }
-                if (p == 'stat' && b >= 7) {
+                if (p == "stat" && b >= 7) {
                     g.stat++
                 }
             }
@@ -370,60 +535,91 @@ function calculate_item_properties(e, d) {
         }
     }
     for (p in g) {
-        if (!in_arr(p, [
-                'evasion',
-                'reflection',
-                'lifesteal',
-                'attr0',
-                'attr1'
-            ])) {
+        if (!in_arr(p, ["evasion", "reflection", "lifesteal", "attr0", "attr1", "crit"])) {
             g[p] = round(g[p])
         }
     }
     if (e.stat && d.stat_type) {
         g[d.stat_type] += g.stat * {
-                str: 1,
-                vit: 1,
-                dex: 1,
-                'int': 1,
-                evasion: 0.125,
-                reflection: 0.875
-            }
-                [
-                d.stat_type
-                ];
+            str: 1,
+            vit: 1,
+            dex: 1,
+            "int": 1,
+            evasion: 0.125,
+            reflection: 0.875,
+            rpiercing: 1.25,
+            apiercing: 1.25
+        }[d.stat_type];
         g.stat = 0
+    }
+    if (d.p == "shiny") {
+        if (g.attack) {
+            g.attack += 5
+        } else {
+            if (g.stat) {
+                g.stat += 2
+            } else {
+                if (g.armor) {
+                    g.armor += 15;
+                    g.resistance = (g.resistance || 0) + 10
+                }
+            }
+        }
+    } else {
+        if (d.p == "superfast") {
+            g.frequency += 20
+        }
     }
     prop_cache[a] = g;
     return g
 }
+function random_one(a) {
+    return a[parseInt(a.length * Math.random())]
+}
+function floor_f2(a) {
+    return parseInt(a * 100) / 100
+}
+function to_pretty_float(a) {
+    if (!a) {
+        return "0"
+    }
+    var b = floor_f2(a).toFixed(2)
+        , a = parseFloat(b);
+    if (parseFloat(b) == parseFloat(a.toFixed(1))) {
+        b = a.toFixed(1)
+    }
+    if (parseFloat(b) == parseFloat(parseInt(a))) {
+        b = parseInt(a)
+    }
+    return b
+}
 function to_pretty_num(a) {
     if (!a) {
-        return '0'
+        return "0"
     }
     a = round(a);
-    var b = '';
+    var b = "";
     while (a) {
         var c = a % 1000;
         if (!c) {
-            c = '000'
+            c = "000"
         } else {
             if (c < 10 && c != a) {
-                c = '00' + c
+                c = "00" + c
             } else {
                 if (c < 100 && c != a) {
-                    c = '0' + c
+                    c = "0" + c
                 }
             }
         }
         if (!b) {
             b = c
         } else {
-            b = c + ',' + b
+            b = c + "," + b
         }
         a = (a - a % 1000) / 1000
     }
-    return '' + b
+    return "" + b
 }
 function e_array(a) {
     var c = [];
@@ -432,33 +628,37 @@ function e_array(a) {
     }
     return c
 }
-function gx(a) {
-    if ('real_x' in a) {
+function set_xy(b, a, c) {
+    if ("real_x"in b) {
+        b.real_x = a,
+            b.real_y = c
+    } else {
+        b.x = a,
+            b.y = c
+    }
+}
+function get_xy(a) {
+    return [get_x(a), get_y(a)]
+}
+function get_x(a) {
+    if ("real_x"in a) {
         return a.real_x
     }
     return a.x
 }
-function gy(a) {
-    if ('real_y' in a) {
+function get_y(a) {
+    if ("real_y"in a) {
         return a.real_y
     }
     return a.y
 }
-function simple_distance(a, b) {
-    var c = a.x,
-        h = a.y,
-        g = b.x,
-        f = b.y;
-    if (a.map && b.map && a.map != b.map) {
+function simple_distance(e, d) {
+    var c = get_x(e)
+        , h = get_y(e)
+        , g = get_x(d)
+        , f = get_y(d);
+    if (e.map && d.map && e.map != d.map) {
         return 9999999
-    }
-    if ('real_x' in a) {
-        c = a.real_x,
-            h = a.real_y
-    }
-    if ('real_y' in b) {
-        g = b.real_x,
-            f = b.real_y
     }
     return Math.sqrt((c - g) * (c - g) + (h - f) * (h - f))
 }
@@ -484,167 +684,165 @@ function recalculate_vxy(a) {
     }
 }
 function is_in_front(b, a) {
-    var c = Math.atan2(gy(a) - gy(b), gx(a) - gx(b)) * 180 / Math.PI;
+    var c = Math.atan2(get_y(a) - get_y(b), get_x(a) - get_x(b)) * 180 / Math.PI;
     if (b.angle !== undefined && Math.abs(b.angle - c) <= 45) {
         return true
     }
     return false
 }
-function calculate_move_original(f, c, j, a, h) {
-    var e,
-        g = j < h,
-        b = c < a;
-    for (var d = 0; d < (f.x_lines || []).length; d++) {
-        var k = f.x_lines[d];
-        if (!(c <= k[0] && k[0] <= a || a <= k[0] && k[0] <= c)) {
-            continue
-        }
-        e = j + (h - j) * (k[0] - c) / (a - c + EPS);
-        if (!(k[1] <= e && e <= k[2])) {
-            continue
-        }
-        if (g) {
-            h = min(h, e)
-        } else {
-            h = max(h, e)
-        }
-        if (b) {
-            a = min(a, k[0] - 3)
-        } else {
-            a = max(a, k[0] + 3)
-        }
+function calculate_movex(A, k, j, f, e) {
+    if (f == Infinity) {
+        f = CINF
     }
-    for (var d = 0; d < (f.y_lines || []).length; d++) {
-        var k = f.y_lines[d];
-        if (!(j <= k[0] && k[0] <= h || h <= k[0] && k[0] <= j)) {
-            continue
-        }
-        e = c + (a - c) * (k[0] - j) / (h - j + EPS);
-        if (!(k[1] <= e && e <= k[2])) {
-            continue
-        }
-        if (b) {
-            a = min(a, e)
-        } else {
-            a = max(a, e)
-        }
-        if (g) {
-            h = min(h, k[0] - 3)
-        } else {
-            h = max(h, k[0] + 7)
-        }
-    }
-    for (var d = 0; d < (f.x_lines || []).length; d++) {
-        var k = f.x_lines[d];
-        if (!(c <= k[0] && k[0] <= a || a <= k[0] && k[0] <= c)) {
-            continue
-        }
-        e = j + (h - j) * (k[0] - c) / (a - c + EPS);
-        if (!(k[1] <= e && e <= k[2])) {
-            continue
-        }
-        if (g) {
-            h = min(h, e)
-        } else {
-            h = max(h, e)
-        }
-        if (b) {
-            a = min(a, k[0] - 3)
-        } else {
-            a = max(a, k[0] + 3)
-        }
-    }
-    return {
-        x: a,
-        y: h
-    }
-}
-function calculate_movex(x, j, h, e, d) {
     if (e == Infinity) {
         e = CINF
     }
-    if (d == Infinity) {
-        d = CINF
-    }
-    var r = h < d;
-    var y = j < e;
-    var k = x.x_lines || [];
-    var u = x.y_lines || [];
+    var s = j < e;
+    var B = k < f;
+    var l = A.x_lines || [];
+    var x = A.y_lines || [];
+    var r = min(k, f);
+    var z = max(k, f);
     var q = min(j, e);
-    var w = max(j, e);
-    var o = min(h, d);
-    var v = max(h, d);
+    var y = max(j, e);
+    var o = f - k;
     var n = e - j;
-    var m = d - h;
-    var f = m / (n + EPS);
-    var s = 1 / f;
-    for (var t = 0; t < k.length; t++) {
-        var l = k[t];
-        var b = l[0];
-        if (w < b || q > b || v < l[1] || o > l[2]) {
+    var g = n / (o + REPS);
+    var v = 1 / g;
+    var u = 10 * EPS;
+    for (var w = bsearch_start(l, r); w < l.length; w++) {
+        var m = l[w];
+        var b = m[0]
+            , d = b + u;
+        if (B) {
+            d = b - u
+        }
+        if (z < b) {
+            break
+        }
+        if (z < b || r > b || y < m[1] || q > m[2]) {
             continue
         }
-        var g = h + (b - j) * f;
-        if (g < l[1] || g > l[2]) {
+        var h = j + (b - k) * g;
+        if (eps_equal(k, f) && eps_equal(k, b)) {
+            d = b;
+            if (s) {
+                h = min(m[1], m[2]) - u,
+                    e = min(e, h),
+                    y = e
+            } else {
+                h = max(m[1], m[2]) + u,
+                    e = min(e, h),
+                    q = e
+            }
             continue
         }
-        if (r) {
-            d = min(d, g);
-            v = d
-        } else {
-            d = max(d, g);
-            o = d
+        if (h < m[1] || h > m[2]) {
+            continue
         }
-        if (y) {
-            e = min(e, b - 3);
-            w = e
+        if (s) {
+            e = min(e, h);
+            y = e
         } else {
-            e = max(e, b + 3);
+            e = max(e, h);
             q = e
+        }
+        if (B) {
+            f = min(f, d);
+            z = f
+        } else {
+            f = max(f, d);
+            r = f
         }
     }
-    for (var t = 0; t < u.length; t++) {
-        var l = u[t];
-        var a = l[0];
-        if (v < a || o > a || w < l[1] || q > l[2]) {
+    for (var w = bsearch_start(x, q); w < x.length; w++) {
+        var m = x[w];
+        var a = m[0]
+            , t = a + u;
+        if (s) {
+            t = a - u
+        }
+        if (y < a) {
+            break
+        }
+        if (y < a || q > a || z < m[1] || r > m[2]) {
             continue
         }
-        var c = j + (a - h) * s;
-        if (c < l[1] || c > l[2]) {
+        var c = k + (a - j) * v;
+        if (eps_equal(j, e) && eps_equal(j, a)) {
+            t = a;
+            if (B) {
+                c = min(m[1], m[2]) - u,
+                    f = min(f, c),
+                    z = f
+            } else {
+                c = max(m[1], m[2]) + u,
+                    f = min(f, c),
+                    r = f
+            }
             continue
         }
-        if (y) {
-            e = min(e, c);
-            w = e
+        if (c < m[1] || c > m[2]) {
+            continue
+        }
+        if (B) {
+            f = min(f, c);
+            z = f
         } else {
-            e = max(e, c);
+            f = max(f, c);
+            r = f
+        }
+        if (s) {
+            e = min(e, t);
+            y = e
+        } else {
+            e = max(e, t);
             q = e
-        }
-        if (r) {
-            d = min(d, a - 3);
-            v = d
-        } else {
-            d = max(d, a + 7);
-            o = d
         }
     }
     return {
-        x: e,
-        y: d
+        x: f,
+        y: e
     }
 }
-function calculate_movev1(e, g, f, d, c) {
-    var b = calculate_movex(e, g, f, d, c);
-    if (b.x != d && b.y != c) {
-        var a = calculate_movex(e, b.x, b.y, d, b.y);
-        if (a.x == b.x) {
-            var a = calculate_movex(e, a.x, a.y, a.x, c)
+function get_height(a) {
+    if (a.me) {
+        return a.aheight
+    } else {
+        if (a.mscale) {
+            return a.height / a.mscale
+        } else {
+            return a.height
         }
-        return a
     }
-    return b
 }
-function calculate_move(e, g, f, d, c) {
+function get_width(a) {
+    if (a.me) {
+        return a.awidth
+    } else {
+        if (a.mscale) {
+            return a.width / a.mscale
+        } else {
+            return a.width
+        }
+    }
+}
+function set_base(a) {
+    var b = a.mtype || a.type;
+    a.base = {
+        h: 8,
+        v: 7,
+        vn: 2
+    };
+    if (G.dimensions[b] && G.dimensions[b][3]) {
+        a.base.h = G.dimensions[b][3];
+        a.base.v = min(9.9, G.dimensions[b][4])
+    } else {
+        a.base.h = min(12, get_width(a) * 0.8);
+        a.base.v = min(9.9, get_height(a) / 4)
+    }
+}
+function calculate_move_v2(e, g, f, d, c) {
     if (d == Infinity) {
         d = CINF
     }
@@ -661,77 +859,281 @@ function calculate_move(e, g, f, d, c) {
     }
     return b
 }
-function recalculate_move(a) {
-    var c = a.x,
-        e = a.y,
-        b = a.going_x,
-        d = a.going_y;
-    if ('real_x' in a) {
-        c = a.real_x,
-            e = a.real_y
+var m_calculate = false, m_line_x = false, m_line_y = false, line_hit_x = null, line_hit_y = null, m_dx, m_dy;
+function calculate_move(k, g, e) {
+    m_calculate = true;
+    var a = k.map
+        , j = get_x(k)
+        , f = get_y(k);
+    var l = [[0, 0]];
+    var b = [[g, e]]
+        , c = [];
+    if (k.base) {
+        l = [[-k.base.h, k.base.vn], [k.base.h, k.base.vn], [-k.base.h, -k.base.v], [k.base.h, -k.base.v]]
     }
-    move = calculate_move(G.maps[a.map].data || {}, c, e, b, d);
+    l.forEach(function(r) {
+        for (var t = 0; t < 3; t++) {
+            var w = r[0]
+                , u = r[1];
+            var s = g + w
+                , q = e + u;
+            if (t == 1) {
+                s = j + w
+            }
+            if (t == 2) {
+                q = f + u
+            }
+            var o = calculate_movex(G.geometry[a] || {}, j + w, f + u, s, q);
+            var v = point_distance(j + w, f + u, o.x, o.y);
+            w = o.x - w;
+            u = o.y - u;
+            if (!in_arrD2([w, u], b)) {
+                b.push([w, u])
+            }
+        }
+    });
+    var m = -1
+        , d = {
+        x: j,
+        y: f
+    }
+        , h = CINF;
+    function n(q) {
+        var o = q[0]
+            , s = q[1];
+        if (can_move({
+            map: a,
+            x: j,
+            y: f,
+            going_x: o,
+            going_y: s,
+            base: k.base
+        })) {
+            var r = point_distance(g, e, o, s);
+            if (r < h) {
+                h = r;
+                d = {
+                    x: o,
+                    y: s
+                }
+            }
+        }
+        if (line_hit_x !== null) {
+            c.push([line_hit_x, line_hit_y]),
+                line_hit_x = null,
+                line_hit_y = null
+        }
+    }
+    b.forEach(n);
+    c.forEach(n);
+    if (point_distance(j, f, d.x, d.y) < 10 * EPS) {
+        d = {
+            x: j,
+            y: f
+        }
+    }
+    m_calculate = false;
+    return d
+}
+function point_distance(b, d, a, c) {
+    return Math.sqrt((a - b) * (a - b) + (c - d) * (c - d))
+}
+function recalculate_move(a) {
+    move = calculate_move(a, a.going_x, a.going_y);
     a.going_x = move.x;
     a.going_y = move.y
 }
-function can_move(f) {
-    var data = G.maps[f.map].data || {};
-    var starX = f.x,
-        startY = f.y,
-        endX = f.going_x,
-        endY = f.going_y,
-        d;
-    if (simple_distance({
-            x: starX,
-            y: startY
-        }, {
-            x: endX,
-            y: endY
-        }) < 10) {
-        return true
+function bsearch_start(a, c) {
+    var e = 0, b = a.length - 1, d;
+    while (e < b - 1) {
+        d = parseInt((e + b) / 2);
+        if (a[d][0] < c) {
+            e = d
+        } else {
+            b = d - 1
+        }
     }
-    for (var c = 0; c < (data.x_lines || []).length; c++) {
-        var xline = data.x_lines[c];
-        if (!(starX <= xline[0] && xline[0] <= endX || endX <= xline[0] && xline[0] <= starX)) {
+    return e
+}
+function can_move(l, t) {
+    var a = G.geometry[l.map] || {}
+        , x = 0;
+    var w = l.x, f = l.y, v = l.going_x, e = l.going_y, q, k = min(w, v), h = min(f, e), j = max(w, v), g = max(f, e);
+    if (!t && l.base) {
+        var n = true;
+        [[-l.base.h, l.base.vn], [l.base.h, l.base.vn], [-l.base.h, -l.base.v], [l.base.h, -l.base.v]].forEach(function(c) {
+            var z = c[0]
+                , y = c[1];
+            if (!n || !can_move({
+                map: l.map,
+                x: w + z,
+                y: f + y,
+                going_x: v + z,
+                going_y: e + y
+            }, 1)) {
+                n = false
+            }
+        });
+        if (1) {
+            var u = l.base.h
+                , s = -l.base.h;
+            m_line_x = max;
+            if (v > w) {
+                u = -l.base.h,
+                    s = l.base.h,
+                    mcy = m_line_x = min
+            }
+            var d = l.base.vn
+                , b = -l.base.v;
+            m_line_y = max;
+            if (e > f) {
+                d = -l.base.v,
+                    b = l.base.vn,
+                    m_line_y = min
+            }
+            m_dx = -s;
+            m_dy = -b;
+            if (!n || !can_move({
+                map: l.map,
+                x: v + s,
+                y: e + d,
+                going_x: v + s,
+                going_y: e + b
+            }, 1)) {
+                n = false
+            }
+            if (!n || !can_move({
+                map: l.map,
+                x: v + u,
+                y: e + b,
+                going_x: v + s,
+                going_y: e + b
+            }, 1)) {
+                n = false
+            }
+            m_line_x = m_line_y = false
+        }
+        return n
+    }
+    function m(y, c, A, z) {
+        line_hit_x = m_line_x(y, A),
+            line_hit_x = m_line_x(line_hit_x + 6 * EPS, line_hit_x - 6 * EPS) + m_dx;
+        line_hit_y = m_line_y(c, z),
+            line_hit_y = m_line_y(line_hit_y + 6 * EPS, line_hit_y - 6 * EPS) + m_dy
+    }
+    for (var r = bsearch_start(a.x_lines || [], k); r < (a.x_lines || []).length; r++) {
+        var o = a.x_lines[r];
+        if (o[0] == v && (o[1] <= e && o[2] >= e || o[0] == w && f <= o[1] && e > o[1])) {
+            if (m_line_y) {
+                m(o[0], o[1], o[0], o[2])
+            }
+            return false
+        }
+        if (k > o[0]) {
             continue
         }
-        d = startY + (endY - startY) * (xline[0] - starX) / (endX - starX + EPS);
-        if (!(xline[1] <= d && d <= xline[2])) {
+        if (j < o[0]) {
+            break
+        }
+        q = f + (e - f) * (o[0] - w) / (v - w + REPS);
+        if (!(o[1] - EPS <= q && q <= o[2] + EPS)) {
             continue
+        }
+        if (m_line_y) {
+            m(o[0], o[1], o[0], o[2])
         }
         return false
     }
-    for (var c = 0; c < (data.y_lines || []).length; c++) {
-        var yline = data.y_lines[c];
-        if (!(startY <= yline[0] && yline[0] <= endY || endY <= yline[0] && yline[0] <= startY)) {
+    for (var r = bsearch_start(a.y_lines || [], h); r < (a.y_lines || []).length; r++) {
+        var o = a.y_lines[r];
+        if (o[0] == e && (o[1] <= v && o[2] >= v || o[0] == f && w <= o[1] && v > o[1])) {
+            if (m_line_x) {
+                m(o[1], o[0], o[2], o[0])
+            }
+            return false
+        }
+        if (h > o[0]) {
             continue
         }
-        d = starX + (endX - starX) * (yline[0] - startY) / (endY - startY + EPES);
-        if (!(yline[1] <= d && d <= yline[2])) {
+        if (g < o[0]) {
+            break
+        }
+        q = w + (v - w) * (o[0] - f) / (e - f + REPS);
+        if (!(o[1] - EPS <= q && q <= o[2] + EPS)) {
             continue
+        }
+        if (m_line_x) {
+            m(o[1], o[0], o[2], o[0])
         }
         return false
     }
     return true
 }
+function closest_line(c, a, d) {
+    var b = 16000;
+    [[0, 16000], [0, -16000], [16000, 0], [-16000, 0]].forEach(function(f) {
+        var j = f[0]
+            , g = f[1];
+        var e = calculate_move({
+            map: c,
+            x: a,
+            y: d
+        }, a + j, d + g);
+        var h = point_distance(a, d, e.x, e.y);
+        if (h < b) {
+            b = h
+        }
+    });
+    return b
+}
+function unstuck_logic(a) {
+    if (!can_move({
+        map: a.map,
+        x: get_x(a),
+        y: get_y(a),
+        going_x: get_x(a),
+        going_y: get_y(a) + EPS / 2,
+        base: a.base
+    })) {
+        var b = false;
+        if (can_move({
+            map: a.map,
+            x: get_x(a),
+            y: get_y(a) + 8.1,
+            going_x: get_x(a),
+            going_y: get_y(a) + 8.1 + EPS / 2,
+            base: a.base
+        })) {
+            set_xy(a, get_x(a), get_y(a) + 8.1);
+            b = true
+        } else {
+            if (can_move({
+                map: a.map,
+                x: get_x(a),
+                y: get_y(a) - 8.1,
+                going_x: get_x(a),
+                going_y: get_y(a) - 8.1 - EPS / 2,
+                base: a.base
+            })) {
+                set_xy(a, get_x(a), get_y(a) - 8.1);
+                b = true
+            }
+        }
+        if (!b) {
+            console.log("#CRITICAL: Couldn't fix blink onto line issue")
+        } else {
+            console.log("Blinked onto line, fixed")
+        }
+    }
+}
 function stop_logic(b) {
     if (!b.moving) {
         return
     }
-    var a = b.x,
-        c = b.y;
-    if ('real_x' in b) {
-        a = b.real_x,
-            c = b.real_y
-    }
+    var a = get_x(b)
+        , c = get_y(b);
     if (((b.from_x <= b.going_x && a >= b.going_x - 0.1) || (b.from_x >= b.going_x && a <= b.going_x + 0.1)) && ((b.from_y <= b.going_y && c >= b.going_y - 0.1) || (b.from_y >= b.going_y && c <= b.going_y + 0.1))) {
-        if ('real_x' in b) {
-            b.real_x = b.going_x,
-                b.real_y = b.going_y
-        } else {
-            b.x = b.going_x,
-                b.y = b.going_y
-        }
+        set_xy(b, b.going_x, b.going_y);
         if (b.loop) {
             b.going_x = b.positions[(b.last + 1) % b.positions.length][0];
             b.going_y = b.positions[(++b.last) % b.positions.length][1];
@@ -739,9 +1141,76 @@ function stop_logic(b) {
             start_moving_element(b);
             return
         }
-        b.moving = false;
-        b.vx = b.vy = 0
+        b.moving = b.amoving || false;
+        b.vx = b.vy = 0;
+        if (b.name_tag) {
+            stop_name_tag(b)
+        }
     }
+}
+function is_door_close(e, b, a, f) {
+    var d = G.maps[e]
+        , c = d.spawns[b[6]];
+    if (point_distance(a, f, c[0], c[1]) < 40) {
+        return true
+    }
+    if (distance({
+        x: a,
+        y: f,
+        width: 26,
+        height: 35
+    }, {
+        x: b[0],
+        y: b[1],
+        width: b[2],
+        height: b[3]
+    }) < 40) {
+        return true
+    }
+    return false
+}
+function can_use_door(f, b, a, g) {
+    var e = G.maps[f]
+        , c = e.spawns[b[6]];
+    if (point_distance(a, g, c[0], c[1]) < 40 && can_move({
+        map: f,
+        x: a,
+        y: g,
+        going_x: c[0],
+        going_y: c[1]
+    })) {
+        return true
+    }
+    if (distance({
+        x: a,
+        y: g,
+        width: 26,
+        height: 35
+    }, {
+        x: b[0],
+        y: b[1],
+        width: b[2],
+        height: b[3]
+    }) < 40) {
+        var d = false;
+        [[0, 0], [-b[2] / 2, 0], [b[2] / 2, 0], [-b[2] / 2, -b[3]], [b[2] / 2, -b[3]], [0, -b[3]], ].forEach(function(h) {
+            var k = h[0]
+                , j = h[1];
+            if (can_move({
+                map: f,
+                x: a,
+                y: g,
+                going_x: b[0] + k,
+                going_y: b[1] + j
+            })) {
+                d = true
+            }
+        });
+        if (d) {
+            return true
+        }
+    }
+    return false
 }
 function trigger(a) {
     setTimeout(a, 0)
@@ -760,35 +1229,39 @@ function to_number(a) {
     }
     return a
 }
+function is_number(b) {
+    try {
+        if (!isNaN(b) && 0 + b === b) {
+            return true
+        }
+    } catch (a) {}
+    return false
+}
 function is_string(b) {
     try {
-        return Object.prototype.toString.call(b) == '[object String]'
-    } catch (a) {
-    }
+        return Object.prototype.toString.call(b) == "[object String]"
+    } catch (a) {}
     return false
 }
 function is_array(b) {
     try {
-        if (b instanceof Array) {
+        if (Array.isArray(b)) {
             return true
         }
-    } catch (c) {
-    }
+    } catch (c) {}
     return false
 }
 function is_function(b) {
     try {
         var a = {};
-        return b && a.toString.call(b) === '[object Function]'
-    } catch (c) {
-    }
+        return b && a.toString.call(b) === "[object Function]"
+    } catch (c) {}
     return false
 }
 function is_object(b) {
     try {
-        return b !== null && typeof b === 'object'
-    } catch (a) {
-    }
+        return b !== null && typeof b === "object"
+    } catch (a) {}
     return false
 }
 function clone(d, b) {
@@ -802,9 +1275,9 @@ function clone(d, b) {
         return d
     }
     if (b.simple_functions && is_function(d)) {
-        return '[clone]:' + d.toString().substring(0, 40)
+        return "[clone]:" + d.toString().substring(0, 40)
     }
-    if ('object' != typeof d) {
+    if ("object" != typeof d) {
         return d
     }
     if (d instanceof Date) {
@@ -826,7 +1299,7 @@ function clone(d, b) {
         for (var a in d) {
             if (d.hasOwnProperty(a)) {
                 if (b.seen.indexOf(d[a]) !== -1) {
-                    e[a] = 'circular_attribute[clone]';
+                    e[a] = "circular_attribute[clone]";
                     continue
                 }
                 e[a] = clone(d[a], b)
@@ -834,13 +1307,13 @@ function clone(d, b) {
         }
         return e
     }
-    throw 'type not supported'
+    throw "type not supported"
 }
 function safe_stringify(d, b) {
     var a = [];
     try {
-        return JSON.stringify(d, function (e, f) {
-            if (f != null && typeof f == 'object') {
+        return JSON.stringify(d, function(e, f) {
+            if (f != null && typeof f == "object") {
                 if (a.indexOf(f) >= 0) {
                     return
                 }
@@ -849,7 +1322,7 @@ function safe_stringify(d, b) {
             return f
         }, b)
     } catch (c) {
-        return 'safe_stringify_exception'
+        return "safe_stringify_exception"
     }
 }
 function smart_eval(code, args) {
@@ -857,9 +1330,7 @@ function smart_eval(code, args) {
         return
     }
     if (args && !is_array(args)) {
-        args = [
-            args
-        ]
+        args = [args]
     }
     if (is_function(code)) {
         if (args) {
@@ -880,21 +1351,25 @@ function is_substr(d, c) {
                 if (d && d.toLowerCase().indexOf(c[f].toLowerCase()) != -1) {
                     return true
                 }
-            } catch (g) {
-            }
+            } catch (g) {}
         }
     } else {
         try {
             if (d && d.toLowerCase().indexOf(c.toLowerCase()) != -1) {
                 return true
             }
-        } catch (g) {
-        }
+        } catch (g) {}
     }
     return false
 }
+function seed0() {
+    return parseInt((new Date()).getMinutes() / 10)
+}
+function seed1() {
+    return parseInt((new Date()).getSeconds() / 10)
+}
 function to_title(a) {
-    return a.replace(/\w\S*/g, function (b) {
+    return a.replace(/\w\S*/g, function(b) {
         return b.charAt(0).toUpperCase() + b.substr(1).toLowerCase()
     })
 }
@@ -917,14 +1392,22 @@ function in_arr(b, d) {
     if (is_array(b)) {
         for (var a = 0; a < b.length; a++) {
             for (var c in d) {
-                if (b[a] == d[c]) {
+                if (b[a] === d[c]) {
                     return true
                 }
             }
         }
     }
     for (var c in d) {
-        if (b == d[c]) {
+        if (b === d[c]) {
+            return true
+        }
+    }
+    return false
+}
+function in_arrD2(c, a) {
+    for (var b = 0; b < a.length; b++) {
+        if (c[0] == a[b][0] && c[1] == a[b][1]) {
             return true
         }
     }
@@ -954,6 +1437,9 @@ function floor(a) {
 function ceil(a) {
     return Math.ceil(a)
 }
+function eps_equal(d, c) {
+    return Math.abs(d - c) < 5 * EPS
+}
 function abs(a) {
     return Math.abs(a)
 }
@@ -964,9 +1450,7 @@ function max(d, c) {
     return Math.max(d, c)
 }
 function shuffle(c) {
-    var d,
-        b,
-        e;
+    var d, b, e;
     for (e = c.length; e; e--) {
         d = Math.floor(Math.random() * e);
         b = c[e - 1];
@@ -975,10 +1459,28 @@ function shuffle(c) {
     }
     return c
 }
+function random_binary() {
+    var b = "";
+    for (var a = 0; a < 2 + parseInt(Math.random() * 12); a++) {
+        if (Math.random() < 0.5) {
+            b += "0"
+        } else {
+            b += "1"
+        }
+    }
+    return b
+}
+function random_binaries() {
+    var b = "";
+    for (var a = 0; a < 7 + parseInt(Math.random() * 23); a++) {
+        b += random_binary() + " "
+    }
+    return b
+}
 function randomStr(a) {
-    var e = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz',
-        c = 'ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz';
-    var f = '';
+    var e = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz"
+        , c = "ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
+    var f = "";
     for (var d = 0; d < a; d++) {
         if (d == 0) {
             var b = Math.floor(Math.random() * c.length);
@@ -990,28 +1492,20 @@ function randomStr(a) {
     }
     return f
 }
-String.prototype.replace_all = function (c, a) {
+function lstack(a, c, b) {
+    a.unshift(c);
+    while (a.length > b) {
+        a.pop()
+    }
+}
+String.prototype.replace_all = function(c, a) {
     var b = this;
-    return b.replace(new RegExp(c.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&'), 'g'), a)
-};
+    return b.replace(new RegExp(c.replace(/[-\/\\^$*+?.()|[\]{}]/g, "\\$&"),"g"), a)
+}
+;
 function html_escape(a) {
     var d = a;
-    var b = [
-        [/&/g,
-            '&amp;'],
-        [
-            /</g,
-            '&lt;'
-        ],
-        [
-            />/g,
-            '&gt;'
-        ],
-        [
-            /"/g,
-            '&quot;'
-        ]
-    ];
+    var b = [[/&/g, "&amp;"], [/</g, "&lt;"], [/>/g, "&gt;"], [/"/g, "&quot;"]];
     for (var c in b) {
         d = d.replace(b[c][0], b[c][1])
     }
@@ -1030,12 +1524,6 @@ function future_s(a) {
     b.setSeconds(b.getSeconds() + a);
     return b
 }
-/**
- * Returns
- * @param {Date} a start
- * @param {Date} b stop
- * @returns {number}
- */
 function mssince(a, b) {
     if (!b) {
         b = new Date()
@@ -1052,9 +1540,9 @@ function hsince(a, b) {
     return mssince(a, b) / 3600000
 }
 function randomStr(a) {
-    var e = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz',
-        c = 'ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz';
-    var f = '';
+    var e = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz"
+        , c = "ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz";
+    var f = "";
     for (var d = 0; d < a; d++) {
         if (d == 0) {
             var b = Math.floor(Math.random() * c.length);
@@ -1066,24 +1554,37 @@ function randomStr(a) {
     }
     return f
 }
+function log_trace(a, b) {
+    console.log("\n====================");
+    if (typeof b === "object") {
+        if (b.message) {
+            console.log("Exception[" + a + "]:\n" + b.message)
+        }
+        if (b.stack) {
+            console.log("Stacktrace:");
+            console.log(b.stack)
+        }
+    } else {
+        console.log("log_trace: argument is not an object on :" + a)
+    }
+    console.log("====================\n")
+}
 function rough_size(d) {
     var c = [];
-    var a = [
-        d
-    ];
+    var a = [d];
     var b = 0;
     while (a.length) {
         var f = a.pop();
-        if (typeof f === 'boolean') {
+        if (typeof f === "boolean") {
             b += 4
         } else {
-            if (typeof f === 'string') {
+            if (typeof f === "string") {
                 b += f.length * 2
             } else {
-                if (typeof f === 'number') {
+                if (typeof f === "number") {
                     b += 8
                 } else {
-                    if (typeof f === 'object' && c.indexOf(f) === -1) {
+                    if (typeof f === "object" && c.indexOf(f) === -1) {
                         c.push(f);
                         for (var e in f) {
                             a.push(f[e])
@@ -1094,4 +1595,5 @@ function rough_size(d) {
         }
     }
     return b
-};
+}
+;
