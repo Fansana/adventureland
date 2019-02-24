@@ -28,7 +28,6 @@
         <article>
             <pre class="prettyprint source linenums"><code>// #NOTE: If you want to see a new function/feature, just request it at: https://github.com/kaansoral/adventureland/issues
 // Or at #feedback in Discord: https://discord.gg/4SXJGU
-
 var character = {
     // This object proxies the real parent.character
     // Normal entities have normal coordinates, their {x,y}'s are equal to their {real_x,real_y}'s
@@ -37,7 +36,6 @@ var character = {
     "note": "This is a proxy object, the real character is in parent.character",
     "properties": ["x", "y"],
 }
-
 Object.defineProperty(character, 'x', {
     get: function () {
         return parent.character.real_x;
@@ -54,65 +52,95 @@ Object.defineProperty(character, 'y', {
 });
 for (var p in parent.character) proxy(p); // Not all properties are sadly available right away, new properties are captured imperfectly
 // var character=parent.character; // Old [25/06/2018]
-
 var G = parent.G; // Game Data - Use show_json(Object.keys(G)); and inspect individual data with show_json(G.skills) and alike
 var safeties = true; // Prevents common delay based issues that cause many requests to be sent to the server in a burst that triggers the server to disconnect the character
-
 server = {
     mode: parent.gameplay, // "normal", "hardcore", "test"
     pvp: parent.is_pvp, // true for PVP servers, use is_pvp() for maps
     region: parent.server_region, // "EU", "US", "ASIA"
     id: parent.server_identifier, // "I", "II", "PVP", "TEST"
 }
-
 game = {
     platform: parent.is_electron &amp;&amp; "electron" || "web", // "electron" for Steam, Mac clients, "web" for https://adventure.land
     graphics: !parent.no_graphics, // if game.graphics is false, don't draw stuff to the game in your Code
     html: !parent.no_html, // if game.html is false, this character is loaded in [CODE] mode
 }
-
 //#NOTE: Most new features are experimental - for #feedback + suggestions: https://discord.gg/X4MpntA [05/01/18]
-
+/**
+ * Loads a character in [CODE] mode.
+ * @param {string} name                     - The name of the character to load.
+ * @param {string|number} code_slot_or_name - The name or slot number of the code to run.
+ */
 function start_character(name, code_slot_or_name) {
     // Loads a character in [CODE] mode
     parent.start_character_runner(name, code_slot_or_name)
 }
-
+/**
+ * Stops the character from running.
+ * @param {string} name         - The name of the character to stop.
+ */
 function stop_character(name) {
     parent.stop_character_runner(name)
 }
-
+/**
+ * Commands the character in [CODE] mode (doesn't work with multiple windows).
+ * @param {string} name         - The name of the character to command.
+ * @param {string} code_snippet - The code to run.
+ * @example
+ * command_character("Me", "say('OMG')");
+ */
 function command_character(name, code_snippet) {
     // Commands the character in [CODE] mode
     parent.character_code_eval(name, code_snippet)
 }
-
+/**
+ * Returns active characters and their state. States: "self", "starting","loading", "active", "code". 
+ * @return {Object.&lt;string, string>} Example return: {"Me":"self","Protector":"loading"}
+ */
 function get_active_characters() {
     // States: "self", "starting","loading", "active", "code"
     // Example: {"Me":"self","Protector":"loading"}
     return parent.get_active_characters()
 }
-
+/**
+ * Checks if you're in a PVP zone.
+ * @return {boolean} Returns true if you're in a PVP zone.
+ */
 function is_pvp() {
     return G.maps[character.map].pvp || server.is_pvp;
 }
-
+/**
+ * Checks if the Entity if is an NPC or not.
+ * @param {Entity} entity - The entity to check.
+ * @return {boolean}        Returns true if the Entity is an NPC.
+ */
 function is_npc(entity) {
     if (entity &amp;&amp; (entity.npc || entity.type == "npc")) return true;
 }
-
+/**
+ * Checks if the Entity if is a monster or not.
+ * @param {Entity} entity - The entity to check.
+ * @return {boolean}        Returns true if the Entity is a monster.
+ */
 function is_monster(entity) {
     if (entity &amp;&amp; entity.type == "monster") return true;
 }
-
+/**
+ * Checks if the Entity if is a character or not.
+ * @param {Entity} entity - The entity to check.
+ * @return {boolean}        Returns true if the Entity is a character.
+ */
 function is_character(entity) {
     if (entity &amp;&amp; entity.type == "character" &amp;&amp; !entity.npc) return true;
 }
-
+/**
+ * Same as is_character.
+ * @param {Entity} e - The entity to check.
+ * @return {boolean}   Returns true if the Entity is a character.
+ */
 function is_player(e) {
     return is_character(e);
 } // backwards-compatibility
-
 /**
  * Activates an item, likely a booster, in the num-th inventory slot
  * @param {number} num number of Inventory slot
@@ -121,7 +149,6 @@ function activate(num) // activates an item, likely a booster, in the num-th inv
 {
     parent.activate(num);
 }
-
 /**
  * Shifts an item, likely a booster, in the num-th inventory slot to s pecific mode
  * shift(0,'goldbooster'); would set the booster int the first inventory slot to gold mode
@@ -136,7 +163,6 @@ function shift(num, name) // shifts an item, likely a booster, in the num-th inv
     // shift(0,'goldbooster')
     parent.shift(num, name);
 }
-
 /**
  * (WIP) Check if the cooldown of a class skill has passed
  * @param {string} name - name of skill
@@ -146,7 +172,6 @@ function can_use(name) {
     if (G.skills[name] &amp;&amp; G.skills[name].class &amp;&amp; !in_arr(character.ctype, G.skills[name].class)) return false; // checks the class
     return parent.can_use(name); // checks the cooldown
 }
-
 /**
  * if name parameter is a number, the character will try to equip the Item in the specified slot.
  * Otherwise it will try to cast the skill with that name and Target
@@ -164,7 +189,6 @@ function use(name, target) // a multi-purpose use function, works for skills too
         equip(name);
     }
 }
-
 /**
  * Will use a skill on the specified target
  * If no target is specified the current character target will be used
@@ -176,17 +200,31 @@ function use_skill(name, target) {
     if (!target) target = get_target();
     parent.use_skill(name, target);
 }
-
+/**
+ * Deposits gold into the bank.
+ * @param {number} gold - The amount of gold to deposit.
+ */
 function bank_deposit(gold) {
     if (!character.bank) return game_log("Not inside the bank");
     parent.socket.emit("bank", {operation: "deposit", amount: gold});
 }
-
+/**
+ * Withdraws gold from the bank.
+ * @param {number} gold - The amount of gold to withdraw.
+ */
 function bank_withdraw(gold) {
     if (!character.bank) return game_log("Not inside the bank");
     parent.socket.emit("bank", {operation: "withdraw", amount: gold});
 }
-
+/**
+ * Stores/swaps an item in the bank.
+ * @param {number} num            - The inventory slot to store/swap (-1 to store to first slot available).
+ * @param {string=} pack          - The bank to use, valid values are one of ["items0","items1","items2","items3","items4","items5","items6","items7"].
+ * @param {number} [pack_slot=-1] - The slot in the bank to use (-1 to store to first available).
+ * @example
+ * bank_store(0); // Stores the first item in inventory in the first/best spot in bank.
+ * bank_store(-1, "items0", 0); // Withdraws the first item in the first bank to the first available inventory slot.
+ */
 function bank_store(num, pack, pack_slot) {
     // bank_store(0) - Stores the first item in inventory in the first/best spot in bank
     // parent.socket.emit("bank",{operation:"swap",pack:pack,str:num,inv:num});
@@ -216,12 +254,20 @@ function bank_store(num, pack, pack_slot) {
     }
     parent.socket.emit("bank", {operation: "swap", pack: pack, str: -1, inv: num});
 }
-
+/**
+ * Move/swap slots in the inventory.
+ * @param {number} a - The first slot to swap.
+ * @param {number} b - The second slot to swap.
+ */
 function swap(a, b) // inventory move/swap
 {
     parent.socket.emit("imove", {a: a, b: b});
 }
-
+/**
+ * Returns the quantity of items named "name" in the inventory.
+ * @param {string} name - The name of the item to count.
+ * @returns {number}    - The number of times the item name was found in the inventory.
+ */
 function quantity(name) {
     var q = 0;
     for (var i = 0; i &lt; character.items.length; i++) {
@@ -229,7 +275,6 @@ function quantity(name) {
     }
     return q;
 }
-
 /**
  * Returns an object containing all the stat properties of an item
  * @param {Gear} item             - The Item in question
@@ -240,7 +285,6 @@ function item_properties(item) // example: item_properties(character.items[0])
     if (!item || !item.name) return null;
     return calculate_item_properties(G.items[item.name], item);
 }
-
 /**
  *  Returns the item Grade in Number format.
  *  -1: Invalid Input
@@ -256,31 +300,28 @@ function item_grade(item) // example: item_grade(character.items[0])
     if (!item || !item.name) return -1;
     return calculate_item_grade(G.items[item.name], item);
 }
-
 /**
  * Returns how much the item is worth in gold
  * @param {Gear|Consumables} item
  * @returns {number} - How the item is worth in gold when sold to an npc
+ * @example
+ * item_value(character.items[0]);
  */
 function item_value(item) // example: item_value(character.items[0])
 {
     if (!item || !item.name) return 0;
     return calculate_item_value(item);
 }
-
 function transport(map, spawn) {
     parent.socket.emit("transport", {to: map, s: spawn});
 }
-
 function is_paused() {
     return parent.paused;
 }
-
 function pause() // Pauses the Graphics
 {
     parent.pause();
 }
-
 /**
  * Return Socket.IO socket, this is the Object which the game uses to communicate with the server
  * @returns {socket}
@@ -288,7 +329,6 @@ function pause() // Pauses the Graphics
 function get_socket() {
     return parent.socket;
 }
-
 /**
  * Returns current map the player is on
  * @returns {Map} current map the player is on
@@ -296,7 +336,6 @@ function get_socket() {
 function get_map() {
     return parent.G.maps[parent.current_map];
 }
-
 /**
  * When CODE is active uses a window in the bottom right hand corner to display a status messages
  * The window is pretty small so keep it short.
@@ -305,7 +344,6 @@ function get_map() {
  */
 function set_message(text, color) {
     if (color) text = "&lt;span style='color: " + color + "'>" + text + "&lt;/span>";
-
     if (!game.html) parent.set_status(text);
     else {
         current_message = text;
@@ -317,7 +355,6 @@ function set_message(text, color) {
         // That's why iframe's have "pointer-events: none;"s now
     }
 }
-
 /**
  * Uses the game log to print out a message
  * @param {string} message the message to print
@@ -327,7 +364,6 @@ function game_log(message, color) {
     if (!color) color = "#51D2E1";
     parent.add_log(message, color);
 }
-
 /**
  * Returns Entity which the Entity is targeting
  * @param {Monster} entity The Entity of which to fetch the target
@@ -343,7 +379,6 @@ function get_target_of(entity) // .target is a Name for Monsters and `id` for Pl
     }
     return null;
 }
-
 /**
  * Returns the current target Entity of the character without checks
  * @returns {Monster|Player|null} - Returns the current target Entity of the character
@@ -352,7 +387,6 @@ function get_target() {
     if (parent.ctarget &amp;&amp; !parent.ctarget.dead) return parent.ctarget;
     return null;
 }
-
 /**
  * Returns the current target Entity of the character but with additional checks.
  * This prevents the targeting of already dead targets or players
@@ -362,7 +396,6 @@ function get_targeted_monster() {
     if (parent.ctarget &amp;&amp; !parent.ctarget.dead &amp;&amp; parent.ctarget.type == 'monster') return parent.ctarget;
     return null;
 }
-
 /**
  * Change the targeted entity
  * @param {Monster} target the new target
@@ -378,7 +411,6 @@ function change_target(target, send) {
     }
     parent.send_target_logic();
 }
-
 /**
  * Checks if there is a clear path to the coordinates or the entity.
  * For an entity you don't have to supply the second argument
@@ -398,12 +430,10 @@ function can_move_to(x, y) {
         base: character.base
     });
 }
-
 function xmove(x, y) {
     if (can_move_to(x, y)) move(x, y);
     else smart_move({x: x, y: y});
 }
-
 /**
  * Checks if the Entity is in attack range
  * @param {Player|Monster} target The entity to check
@@ -415,7 +445,11 @@ function in_attack_range(target) // also works for priests/heal
     if (parent.distance(character, target) &lt;= character.range) return true;
     return false;
 }
-
+/**
+ * Checks if the character is able to attack the target
+ * @param {Monster|Player} target - the Entity for which to check
+ * @returns {boolean} True if the target can be healed
+ */
 function can_attack(target) // also works for priests/heal
 {
     // is_disabled function checks .rip and .stunned
@@ -423,7 +457,6 @@ function can_attack(target) // also works for priests/heal
     if (!parent.is_disabled(character) &amp;&amp; in_attack_range(target) &amp;&amp; new Date() >= parent.next_attack) return true;
     return false;
 }
-
 /**
  * Checks if the character is able to heal the target
  * Same as can_attack but with a more intuitive name
@@ -434,7 +467,6 @@ function can_heal(t) {
     if (is_monster(t)) return false; // ?? :D [11/10/18]
     return can_attack(t);
 }
-
 /**
  * return true if the entity is moving
  * @param {Player|Character|Monster} entity The entity in question
@@ -445,7 +477,6 @@ function is_moving(entity) {
     if (entity.moving) return true;
     return false;
 }
-
 /**
  * Is the entity using the town teleportation skill
  * @param entity {Player|Character|Monster} The entity in question
@@ -456,7 +487,6 @@ function is_transporting(entity) {
     if (entity.me &amp;&amp; parent.transporting) return true;
     return false;
 }
-
 /**
  * Tries to attack the target
  * @param {Player|Monster} target - Target to attack
@@ -471,7 +501,6 @@ function attack(target) {
     else parent.monster_attack.call(target);
     last_attack = new Date();
 }
-
 /**
  * Tries to heal the targeted Character
  * @param {Player} target The target to heal
@@ -494,11 +523,19 @@ function buy(name, quantity) //item names can be spotted from show_json(characte
 {
     parent.buy(name, quantity);
 }
-
+/**
+ * Same as buy, but will only ever use gold.
+ * @param {String} name      - Name of the Item
+ * @param {number} quantity  - Quantity
+ */
 function buy_with_gold(name, quantity) {
     parent.buy_with_gold(name, quantity);
 }
-
+/**
+ * Same as buy, but will only ever use shells.
+ * @param {String} name      - Name of the Item
+ * @param {number} quantity  - Quantity
+ */
 function buy_with_shells(name, quantity) {
     parent.buy_with_shells(name, quantity);
 }
@@ -520,11 +557,16 @@ function equip(num, slot) // slot is optional
 {
     parent.socket.emit("equip", {num: num, slot: slot});
 }
+/**
+ * Unequips the Item in the specified character slot.
+ * @param {string} [slot] Optional  the slot in which to put the item
+ * @example
+ * unequip("mainhand"); // show_json(character.slots) => to see slot options
+ */
 function unequip(slot) // show_json(character.slots) => to see slot options
 {
     parent.socket.emit("unequip", {slot: slot});
 }
-
 /**
  * Puts an item up for sale
  * @param {number} num      - The slot the item is in
@@ -545,7 +587,6 @@ function trade_buy(target, trade_slot) // target needs to be an actual player
 {
     parent.trade_buy(trade_slot, target.id, target.slots[trade_slot].rid); // the .rid changes when the item in the slot changes, it prevents swap-based frauds [22/11/16]
 }
-
 /**
  * Uses the upgrade npc to upgrade items.
  * @param {number} item_num - Slot number of the item you want to upgrade.
@@ -578,7 +619,6 @@ function compound(item0, item1, item2, scroll_num, offering_num) // for example 
     parent.c_offering = offering_num;
     parent.compound();
 }
-
 function craft(i0, i1, i2, i3, i4, i5, i6, i7, i8)
 // for example -> craft(null,0,null,null,1,null,null,2,null)
 // sends 3 items to be crafted, the 0th, 1st, 2nd items in your inventory, and it places them all in the middle column of crafting
@@ -586,7 +626,6 @@ function craft(i0, i1, i2, i3, i4, i5, i6, i7, i8)
     parent.cr_items = [i0, i1, i2, i3, i4, i5, i6, i7, i8];
     parent.craft();
 }
-
 /**
  * Tries to exchange an item in a specific inventory slot. This function also works with quest items and when multiple items are exchanged at once e.g. seashells.
  * @param {number} item_num - Inventory slot
@@ -595,7 +634,6 @@ function exchange(item_num) {
     parent.e_item = item_num;
     parent.exchange(1);
 }
-
 /**
  * Acts as if the player had typed the message into the chat and then send it.
  * This also allows for the use of commands.
@@ -605,7 +643,6 @@ function say(message) // please use MORE responsibly, thank you! :)
 {
     parent.say(message, 1);
 }
-
 /**
  * Sets the character moving to specific coordinates, before using this you should check if you can actually walk to your target or else you might end up somewhere else.
  * @param {number} x - X coordinate
@@ -615,17 +652,13 @@ function pm(name, message) // please use responsibly, thank you! :)
 {
     parent.private_say(name, message, 0)
 }
-
 function move(x, y) {
     if (!can_walk(character)) return;
     parent.move(x, y);
 }
-
-
 function cruise(speed) {
     parent.socket.emit("cruise", speed);
 }
-
 /**
  * A debug Command which opens a Window and shows the json representation of the Object.
  * @param {Object} e - The Object you like to inspect
@@ -634,7 +667,6 @@ function show_json(e) // renders the object as json inside the game
 {
     parent.show_json(parent.game_stringify(e, 2));
 }
-
 /**
  * Returns the entity of a player, only works when the player is visible.
  * @param {String} name - The name of the character
@@ -647,7 +679,6 @@ function get_player(name) // returns the player by name, if the player is within
     for (i in entities) if (entities[i].type == "character" &amp;&amp; entities[i].name == name) target = entities[i];
     return target;
 }
-
 /**
  * Get nearest Monster out of the entities array that meets certain criteria and returns it.
  * @param {Object} args
@@ -667,11 +698,9 @@ function get_nearest_monster(args) {
     // path_check: Checks if the character can move to the target
     // type: Type of the monsters, for example "goo", can be referenced from `show_json(G.monsters)` [08/02/17]
     var min_d = 999999, target = null;
-
     if (!args) args = {};
     if (args &amp;&amp; args.target &amp;&amp; args.target.name) args.target = args.target.name;
     if (args &amp;&amp; args.type == "monster") game_log("You used monster.type, which is always 'monster', use monster.mtype instead");
-
     for (id in parent.entities) {
         var current = parent.entities[id];
         if (current.type != "monster" || current.dead) continue;
@@ -696,10 +725,8 @@ function get_nearest_monster(args) {
 function get_nearest_hostile(args) // mainly as an example [08/02/17]
 {
     var min_d = 999999, target = null;
-
     if (!args) args = {};
     if (args.friendship === undefined &amp;&amp; character.owner) args.friendship = true;
-
     for (id in parent.entities) {
         var current = parent.entities[id];
         if (current.type != "character" || current.rip || current.invincible || current.npc) continue;
@@ -712,7 +739,6 @@ function get_nearest_hostile(args) // mainly as an example [08/02/17]
     }
     return target;
 }
-
 function use_hp_or_mp() {
     if (safeties &amp;&amp; mssince(last_potion) &lt; 600) return;
     var used = false;
@@ -744,7 +770,6 @@ function loot(commander) {
         if (looted == 2) break;
     }
 }
-
 /**
  * Send gold to another player
  * @param {Player|string} receiver - Either a character name or a OtherCharacter Object
@@ -755,7 +780,6 @@ function send_gold(receiver, gold) {
     if (receiver.name) receiver = receiver.name;
     parent.socket.emit("send", {name: receiver, gold: gold});
 }
-
 /**
  * Send item to another player
  * @param {Player|string} receiver         - Either a character name or a OtherCharacter Object
@@ -767,7 +791,6 @@ function send_item(receiver, num, quantity) {
     if (receiver.name) receiver = receiver.name;
     parent.socket.emit("send", {name: receiver, num: num, q: quantity || 1});
 }
-
 /**
  * Destroys an item in the num-th Inventory slot
  * @param {number} num - The Inventory slot of the Item [0,41].
@@ -776,9 +799,8 @@ function destroy_item(num) // num: 0 to 41
 {
     parent.socket.emit("destroy", {num: num});
 }
-
 /**
- * Sens a party Invite to another character
+ * Sends a party Invite to another character
  * @param {Player|string} name   - name ca be a player object, a player name, or an id
  * @param {boolean} is_request           - Is requesting to be invited
  */
@@ -787,54 +809,44 @@ function send_party_invite(name, is_request) // name could be a player object, n
     if (is_object(name)) name = name.name;
     parent.socket.emit('party', {event: is_request &amp;&amp; 'request' || 'invite', name: name});
 }
-
 /**
- * Request to be invited into a party
- * @module group_management
+ * Request to be invited into a party * @global
  * @param {Player|string} name   - name ca be a player object, a player name, or an id
  */
 function send_party_request(name) {
     send_party_invite(name, 1);
 }
-
 /**
- * Accept party invite from player
- * @module group_management
+ * Accept party invite from player * @global
  * @param {string} name
  */
 function accept_party_invite(name) {
     parent.socket.emit('party', {event: 'accept', name: name});
 }
-
 /**
- * Accept party request from player.
- * @module group_management
+ * Accept party request from player. * @global
  * @param {string} name
  */
 function accept_party_request(name) {
     parent.socket.emit('party', {event: 'raccept', name: name});
 }
-
 function unfriend(name) // instead of a name, an owner id also works, this is currently the only way to unfriend someone [20/08/18]
 {
     parent.socket.emit('friend', {event: 'unfriend', name: name});
 }
-
 /**
  * Lets the character respawn
  */
 function respawn() {
     parent.socket.emit('respawn');
 }
-
 /**
  * When a character dies, character.rip is true, you can override handle_death and manually respawn
  * IDEA: A Resident PVP-Dweller, with an evasive Code + irregular respawning
  * respawn current has a 12 second cooldown, best wait 15 seconds before respawning [24/11/16]
  * setTimeout(respawn,15000);
  * return true;
- * NOTE: Add `if(character.rip) {respawn(); return;}` to your main loop/interval too, just in case
- * @module callback
+ * NOTE: Add `if(character.rip) {respawn(); return;}` to your main loop/interval too, just in case * @global
  */
 function handle_death() {
     // When a character dies, character.rip is true, you can override handle_death and manually respawn
@@ -845,10 +857,8 @@ function handle_death() {
     // NOTE: Add `if(character.rip) {respawn(); return;}` to your main loop/interval too, just in case
     return -1;
 }
-
 /**
- * You can implement your own chat commands with this function.
- * @module callback
+ * You can implement your own chat commands with this function. * @global
  * @param command {string}
  * @param args {string}
  * @returns {number}
@@ -862,6 +872,7 @@ function handle_command(command, args) // command's are things like "/party" tha
 /**
  *
  * Send CODE messages to the characters, of course it only works if both characters have CODE active.
+ * @global
  * @param {Array|string} to - Either an Array of names or just a name
  * @param {Object} data     - The data to be sent in object form
  */
@@ -870,8 +881,7 @@ function send_cm(to, data) {
     // data: JSON object
     parent.send_code_message(to, data);
 }
-/**
- * @module callback
+/** * @global
  * @param {string} name - Sender of Code Message
  * @param {Object} data - An Object containing the information send
  */
@@ -879,29 +889,23 @@ function on_cm(name, data) {
     game_log("Received a code message from: " + name);
 }
 /**
- * This function gets called whenever an entity disappears
- * @module callback
+ * This function gets called whenever an entity disappears * @global
  * @param {Player|Monster} entity
  * @param data
  */
-
 function on_disappear(entity, data) {
     // game_log("disappear: "+entity.id+" "+JSON.stringify(data));
 }
-
 /**
  * When multiple characters stay in the same spot, they receive combined damage, this function gets called whenever a monster deals combined damage.
- * Override this function in CODE to react to it
- * @module callback
+ * Override this function in CODE to react to it * @global
  */
 function on_combined_damage() // When multiple characters stay in the same spot, they receive combined damage, this function gets called whenever a monster deals combined damage
 {
     // move(character.real_x+5,character.real_y);
 }
-
 /**
- * Someone is inviting you to a party
- * @module callback
+ * Someone is inviting you to a party * @global
  * @param {string} name - The name of the inviting player
  */
 function on_party_invite(name) // called by the inviter's name
@@ -909,38 +913,30 @@ function on_party_invite(name) // called by the inviter's name
     // accept_party_invite(name)
 }
 /**
- * Someone requesting to join your existing party
- * @module callbacks
+ * Someone requesting to join your existing party * @global
  * @param {string} name  - The name of the player
  */
 function on_party_request(name) // called by the inviter's name - request = someone requesting to join your existing party
 {
     // accept_party_request(name)
 }
-
 /**
  * Called just before the CODE is destroyed.
- * Can be used to remove event listeners or revert states.
- * @module callbacks
+ * Can be used to remove event listeners or revert states. * @global
  */
 function on_destroy() // called just before the CODE is destroyed
 {
     clear_drawings();
     clear_buttons();
 }
-
 /**
- * The game calls this function at the best place in each game draw frame, so if you are playing the game at 60fps, this function gets called 60 times per second
- * @module callbacks
+ * The game calls this function at the best place in each game draw frame, so if you are playing the game at 60fps, this function gets called 60 times per second * @global
  */
 function on_draw() // the game calls this function at the best place in each game draw frame, so if you are playing the game at 60fps, this function gets called 60 times per second
 {
-
 }
-
 /**
- * Override this function to listen for game events
- * @module callback
+ * Override this function to listen for game events * @global
  * @callback
  * @param event {Object}
  * @param event.name {string} name of the event e.g. pinkgoo or goblin.
@@ -953,15 +949,12 @@ function on_game_event(event) {
         // start searching for the "Sneaky Goblin"
     }
 }
-
 var PIXI = parent.PIXI; // for drawing stuff into the game
 var drawings = parent.drawings;
 var buttons = parent.code_buttons;
-
 /**
  * Documentation: [https://pixijs.github.io/docs/PIXI.Graphics.html]{@link https://pixijs.github.io/docs/PIXI.Graphics.html}
- * keep in mind that drawings could significantly slow redraws, especially if you don't .destroy() them
- * @module graphics
+ * keep in mind that drawings could significantly slow redraws, especially if you don't .destroy() them * @global
  * @param x {number}
  * @param y {number}
  * @param x2 {number}
@@ -970,7 +963,6 @@ var buttons = parent.code_buttons;
  * @param color {color}
  * @returns {PIXI.Graphics} [https://pixijs.github.io/docs/PIXI.Graphics.html]{@link https://pixijs.github.io/docs/PIXI.Graphics.html}
  */
-
 function draw_line(x, y, x2, y2, size, color) {
     // keep in mind that drawings could significantly slow redraws, especially if you don't .destroy() them
     if (!game.graphics) return;
@@ -987,8 +979,7 @@ function draw_line(x, y, x2, y2, size, color) {
 }
 /**
  * Documentation: [https://pixijs.github.io/docs/PIXI.Graphics.html]{@link https://pixijs.github.io/docs/PIXI.Graphics.html}
- * Example: draw_circle(character.real_x,character.real_y,character.range) :) [22/10/16]
- * @module graphics
+ * Example: draw_circle(character.real_x,character.real_y,character.range) :) [22/10/16] * @global
  * @param x {number}
  * @param y {number}
  * @param radius {number}
@@ -1009,8 +1000,7 @@ function draw_circle(x, y, radius, size, color) {
     return e;
 }
 /**
- *  Clears drawings added with draw_circle and draw_line functions from the screen.
- * @module graphics
+ *  Clears drawings added with draw_circle and draw_line functions from the screen. * @global
  */
 function clear_drawings() {
     drawings.forEach(function (e) {
@@ -1021,7 +1011,12 @@ function clear_drawings() {
     });
     drawings = parent.drawings = [];
 }
-
+/**
+ * Adds a button to the top bar. * @global
+ * @param {string} id - the id of the new button.
+ * @param {string=} value - the text to display.
+ * @param {function=} fn - the function to run.
+ */
 function add_top_button(id, value, fn) {
     if (!buttons[id]) {
         buttons[id] = {
@@ -1033,7 +1028,12 @@ function add_top_button(id, value, fn) {
     if (fn) set_button_onclick(id, fn)
     if (value) set_button_value(id, value);
 }
-
+/**
+ * Adds a button to the bottom bar. * @global
+ * @param {string} id - the id of the new button.
+ * @param {string=} value - the text to display.
+ * @param {function=} fn - the function to run.
+ */
 function add_bottom_button(id, value, fn) {
     if (!buttons[id]) {
         buttons[id] = {
@@ -1045,32 +1045,51 @@ function add_bottom_button(id, value, fn) {
     if (fn) set_button_onclick(id, fn)
     if (value) set_button_value(id, value);
 }
-
+/**
+ * Sets the displayed text of a button. * @global
+ * @param {string} id - the button to modify.
+ * @param {string} value - the text to display.
+ */
 function set_button_value(id, value) {
     parent.$(".codebutton" + id).html(value);
 }
-
+/**
+ * Sets a function to run when clicked. * @global
+ * @param {string} id - the button to modify.
+ * @param {string} color - the colour to set the button to.
+ * @example
+ *
+ * set_button_color("myButton", "#FFFFFF"); // sets myButton to white.
+ */
 function set_button_color(id, color) {
     parent.$(".codebutton" + id).css("border-color", color);
 }
-
+/**
+ * Sets a function to run when clicked. * @global
+ * @param {string} id - the button to modify.
+ * @param {function} fn - the function to run.
+ */
 function set_button_onclick(id, fn) {
     buttons[id].fn = fn;
 }
-
+/**
+ * Strips all the buttons of their HTML and data. * @global
+ */
 function clear_buttons() {
     parent.$('.codebuttons').html("");
     parent.$('.codebbuttons').html("");
     buttons = parent.code_buttons = {};
 }
-
+/**
+ * Configures the game to auto reload in case you disconnect due to rare network issues. (FIXME: Document differences of "on" and "auto") * @global
+ * @param {string} value - valid values are "on", "off", and "auto".
+ */
 function auto_reload(value) {
     // Configures the game to auto reload in case you disconnect due to rare network issues
     if (value === false) parent.auto_reload = "off";
     else if (value == "auto") parent.auto_reload = "auto"; // code or merchant stand
     else parent.auto_reload = "on"; // always reload
 }
-
 game.listeners = [];
 game.all = function (f) {
     var def = {f: f, id: randomStr(30), event: "all"};
@@ -1111,11 +1130,20 @@ game.trigger = function (event, args) {
     }
     // game_log(to_delete);
 };
-
+/**
+ *
+ * @global
+ * @param {string} name
+ * @param {*} data
+ */
 function trigger_event(name, data) {
     game.trigger(name, data);
 }
-
+/**
+ * Pops up a window showing what an item would look like with the specified parameters. (FIXME: Document arguments better, example) * @global
+ * @param {string} def - The item's id.
+ * @param {Object} args - The item's data.
+ */
 function preview_item(def, args) {
     //PLANNED Improvements:
     //- Importing a custom thumbnail
@@ -1143,7 +1171,15 @@ function preview_item(def, args) {
     parent.show_modal(html);
     parent.prop_cache = {};
 }
-
+/**
+ * Replaces your skillbar keys. * @global
+ * @param {(...string|string[])} arguments - The keys to bind.
+ * @example
+ * 
+ * set_skillbar("1","2","3","4","R");
+ * set_skillbar(["1","2","3","4","R"]);
+ * 
+ */
 function set_skillbar() // example: set_skillbar("1","2","3","4","R") or set_skillbar(["1","2","3","4","R"])
 {
     var arr = ["1"];
@@ -1157,7 +1193,20 @@ function set_skillbar() // example: set_skillbar("1","2","3","4","R") or set_ski
     parent.render_skills();
     parent.render_skills();
 }
-
+/**
+ * Replaces your current keymap with "keymap". * @global
+ * @param {(Object.&lt;string, Object.&lt;string, string>>|Object.&lt;string, {code: string, name: string}>)} keymap - A dictionary of keys to map.
+ * @example
+ * 
+ * set_keymap({"1":{"name":"use_mp"},"2":{"name":"use_hp"}}); // Set key 1 to use health potion, and key 2 to use mana potion.
+ * set_keymap({"1":{name: "snippet", code: "say('OMG')"}}); // Set key 1 to say "OMG".
+ *
+ * // Set key 1 to use health potion, and key 2 to say "OMG".
+ * var skillkey = {"name":"use_mp"};
+ * var codekey = {name: "snippet", code: "say('OMG')"};
+ * set_keymap({"1": skillkey, "2": codekey});
+ * 
+ */
 function set_keymap(keymap) // example: {"1":{"name":"use_mp"},"2":{"name":"use_hp"}}
 {
     parent.set_setting(parent.real_id, "keymap", keymap);
@@ -1165,7 +1214,18 @@ function set_keymap(keymap) // example: {"1":{"name":"use_mp"},"2":{"name":"use_
     parent.render_skills();
     parent.render_skills();
 }
-
+/**
+ * Maps a skill or code to key. * @global
+ * @param {string} key - The key which will be bound.
+ * @param {string} skill - The skill to bind to the key.
+ * @param {string=} code - The code to bind to the key (overrides skill).
+ * @example
+ *
+ * map_key("1","use_hp");
+ * map_key("2","snippet","say('OMG')");
+ * map_key("1","esc");
+ * map_key("ESC","up");
+ */
 function map_key(key, skill, code) // example: map_key("1","use_hp") or map_key("2","snippet","say('OMG')") or map_key("1","esc") or map_key("ESC","up")
 {
     var settings = parent.get_settings(parent.real_id);
@@ -1176,14 +1236,22 @@ function map_key(key, skill, code) // example: map_key("1","use_hp") or map_key(
     if (keymap[key].keycode) parent.K[keymap[key].keycode] = key;
     set_keymap(keymap);
 }
-
+/**
+ * Removes a mapping from a key. * @global
+ * @param {string} key - The key which will have it's binding removed.
+ * @example
+ *
+ *     unmap_key('1');
+ */
 function unmap_key(key) {
     var settings = parent.get_settings(parent.real_id);
     var keymap = settings.keymap || parent.keymap;
     delete keymap[key];
     set_keymap(keymap);
 }
-
+/**
+ * Resets your key mappings. * @global
+ */
 function reset_mappings() {
     parent.keymap = {};
     parent.skillbar = [];
@@ -1191,19 +1259,28 @@ function reset_mappings() {
     set_keymap(parent.keymap);
     set_skillbar(parent.skillbar);
 }
-
+/**
+ * Saves data into local storage. * @global
+ * @param {string} name - The name of the data store.
+ * @param {*} value - The data to store.
+ * @return {*} Returns from "parent.storage_set(name, value)" (FIXME, define return value)
+ */
 function pset(name, value) {
     // on Web, window.localStorage is used, on Steam/Mac, the electron-store package is used for persistent storage
     return parent.storage_set(name, value);
 }
-
+/**
+ * Retrieves data from local storage. * @global
+ * @param {string} name - The name of the data store.
+ * @return {*} The data stored in "name".
+ */
 function pget(name) {
     // on Web, window.localStorage is used, on Steam/Mac, the electron-store package is used for persistent storage
     return parent.storage_get(name);
 }
-
 /**
- *
+ * Loads saved code with the specified name into CODE.
+ * @global
  * @param {string} name
  * @param {function} onerror -  A function that gets executed when the code errors
  */
@@ -1221,7 +1298,6 @@ function load_code(name, onerror) // onerror can be a function that will be exec
     library.onerror = onerror;
     document.getElementsByTagName("head")[0].appendChild(library);
 }
-
 var smart = {
     moving: false,
     map: "main", x: 0, y: 0,
@@ -1237,10 +1313,9 @@ var smart = {
     flags: {}
 };
 /**
- * smart_move uses a Breadth-first search path finding algorithm to find the shortest path
+ * Uses a Breadth-first search path finding algorithm to find the shortest path
  * despite the name, smart_move isn't very smart or efficient, it's up to the players to
- * implement a better movement method.
- * @module path_finding
+ * implement a better movement method. * @global
  * @param {Object} destination
  * @param {string} destination.to - Can be of multiple values.
  *      If destination.to is a monster name we will find where they spawn and set the target destination.
@@ -1311,10 +1386,8 @@ function smart_move(destination, on_done) // despite the name, smart_move isn't 
     };
     console.log(smart.map + " " + smart.x + " " + smart.y);
 }
-
 /**
- * Stop path finding and moving
- * @module path_finding
+ * Stop path finding and moving * @global
  */
 function stop(action) {
     if (!action || action == "move") {
@@ -1327,22 +1400,17 @@ function stop(action) {
         parent.socket.emit("stop", {action: "teleport"});
     }
 }
-
 var queue = [], visited = {}, start = 0, best = null;
 var moves = [[0, 15], [0, -15], [15, 0], [-15, 0]];
-
-/**
- * @module path_finding
- * @param index
+/** * @global
+ * @param {number} index
  */
 function plot(index) {
     if (index == -1) return;
     plot(queue[index].i); // Recursively back-tracks the path we came from
     smart.plot.push(queue[index]);
 }
-
-/**
- * @module path_finding
+/** * @global
  * @param node
  */
 function qpush(node) {
@@ -1353,13 +1421,11 @@ function qpush(node) {
     queue.push(node);
     visited[node.map + "-" + node.x + "-" + node.y] = true;
 }
-
 /**
  * Internal smart_move function
  * Assume the path ahead is [i] [i+1] [i+2] - This routine checks whether [i+1] could be skipped
  * The resulting path is smooth rather than rectangular and bumpy
- * Try adding "function smooth_path(){}" or "smart.prune.smooth=false;" to your Code
- * @module path_finding
+ * Try adding "function smooth_path(){}" or "smart.prune.smooth=false;" to your Code * @global
  */
 function smooth_path() {
     var i = 0, j;
@@ -1381,10 +1447,8 @@ function smooth_path() {
         i++;
     }
 }
-
 function bfs() {
     var timer = new Date(), result = null, optimal = true;
-
     while (start &lt; queue.length) {
         var current = queue[start];
         var map = G.maps[current.map];
@@ -1429,9 +1493,7 @@ function bfs() {
                 }
             });
         }
-
         if (smart.use_town) qpush({map: current.map, x: map.spawns[0][0], y: map.spawns[0][1], town: true}); // "town"
-
         shuffle(moves);
         moves.forEach(function (m) {
             var new_x = parseInt(current.x + m[0]), new_y = parseInt(current.y + m[1]);
@@ -1446,11 +1508,9 @@ function bfs() {
             }))
                 qpush({map: current.map, x: new_x, y: new_y});
         });
-
         start++;
         if (mssince(timer) > (!parent.is_hidden() &amp;&amp; 40 || 500)) return;
     }
-
     if (result === null) result = best, optimal = false;
     if (result === null) {
         game_log("Path not found!", "#CF575F");
@@ -1466,10 +1526,8 @@ function bfs() {
         parent.d_text("Yes!", character, {color: "#58D685"});
     }
 }
-
 /**
- * Internal smart_move function
- * @module path_finding
+ * Internal smart_move function * @global
  */
 function start_pathfinding() {
     smart.searching = true;
@@ -1478,18 +1536,14 @@ function start_pathfinding() {
     game_log("Searching for a path...", "#89D4A2");
     bfs();
 }
-
 /**
- * Internal smart_move function
- * @module path_finding
+ * Internal smart_move function * @global
  */
 function continue_pathfinding() {
     bfs();
 }
-
 /**
- * Internal smart_move function
- * @module path_finding
+ * Internal smart_move function * @global
  */
 function smart_move_logic() {
     if (!smart.moving) return;
@@ -1523,11 +1577,9 @@ function smart_move_logic() {
         }
     }
 }
-
 setInterval(function () {
     smart_move_logic();
 }, 80);
-
 function proxy(name) {
     if (in_arr(name, character.properties)) return;
     character.properties.push(name);
@@ -1540,14 +1592,12 @@ function proxy(name) {
         }
     });
 }
-
 ["bank", "user", "code", "angle", "direction", "target", "from_x", "from_y", "going_x", "going_y", "moving", "vx", "vy", "move_num"].forEach(function (p) {
     proxy(p)
 });
 setInterval(function () {
     for (var p in parent.character) proxy(p);
 }, 50); // bottom of the barrel
-
 function eval_s(code) // this is how snippets are eval'ed if they include "output="/"json_output=" - so if they include these, the scope of eval isn't global - doesn't matter much [13/07/18]
 {
     var output = undefined, json_output = undefined;
@@ -1555,12 +1605,10 @@ function eval_s(code) // this is how snippets are eval'ed if they include "outpu
     if (output !== undefined) parent.show_modal("&lt;pre>" + output + "&lt;/pre>");
     if (json_output !== undefined) parent.show_json(json_output);
 }
-
 function performance_trick() {
     parent.performance_trick(); // Just plays an empty sound file, so browsers don't throttle JS, only way to prevent it, interesting cheat [05/07/18]
     // Lately Chrome has been screwing things up with every update, mostly it's bugs and performance issues, but this time, the way Audio is played has been changed, so, once the game refreshes itself, the tabs need to be manually focused once for performance_trick() to become effective, as Audio can no longer automatically play [21/10/18]
 }
-
 function doneify(fn, s_event, f_event) {
     return function (a, b, c, d, e, f) {
         var rxd = randomStr(30);
@@ -1588,22 +1636,17 @@ function doneify(fn, s_event, f_event) {
         };
     };
 }
-
 buy = doneify(buy, "buy_success", "buy_fail");
-
 //safety flags
 var last_loot = new Date(0);
 var last_attack = new Date(0);
 var last_potion = new Date(0);
 var last_transport = new Date(0);
-
 var last_message = "", current_message = "";
-
 function code_draw() {
     if (last_message != current_message) $("#gg").html(current_message), last_message = current_message;
     requestAnimationFrame(code_draw);
 }
-
 code_draw();</code></pre>
         </article>
     </section>
@@ -1614,13 +1657,13 @@ code_draw();</code></pre>
 </div>
 
 <nav>
-    <h2><a href="index.html">Home</a></h2><h3>Modules</h3><ul><li><a href="module-callback.html">callback</a></li><li><a href="module-callbacks.html">callbacks</a></li><li><a href="module-graphics.html">graphics</a></li><li><a href="module-group_management.html">group_management</a></li><li><a href="module-path_finding.html">path_finding</a></li></ul><h3>Classes</h3><ul><li><a href="Character.html">Character</a></li><li><a href="Monster.html">Monster</a></li><li><a href="PIXI.Sprite.html">Sprite</a></li><li><a href="Player.html">Player</a></li></ul><h3>Global</h3><ul><li><a href="global.html#activate">activate</a></li><li><a href="global.html#attack">attack</a></li><li><a href="global.html#buy">buy</a></li><li><a href="global.html#can_heal">can_heal</a></li><li><a href="global.html#can_move_to">can_move_to</a></li><li><a href="global.html#can_use">can_use</a></li><li><a href="global.html#change_target">change_target</a></li><li><a href="global.html#compound">compound</a></li><li><a href="global.html#destroy_item">destroy_item</a></li><li><a href="global.html#equip">equip</a></li><li><a href="global.html#exchange">exchange</a></li><li><a href="global.html#game_log">game_log</a></li><li><a href="global.html#get_map">get_map</a></li><li><a href="global.html#get_nearest_hostile">get_nearest_hostile</a></li><li><a href="global.html#get_nearest_monster">get_nearest_monster</a></li><li><a href="global.html#get_player">get_player</a></li><li><a href="global.html#get_socket">get_socket</a></li><li><a href="global.html#get_target">get_target</a></li><li><a href="global.html#get_target_of">get_target_of</a></li><li><a href="global.html#get_targeted_monster">get_targeted_monster</a></li><li><a href="global.html#heal">heal</a></li><li><a href="global.html#in_attack_range">in_attack_range</a></li><li><a href="global.html#is_moving">is_moving</a></li><li><a href="global.html#is_transporting">is_transporting</a></li><li><a href="global.html#item_grade">item_grade</a></li><li><a href="global.html#item_properties">item_properties</a></li><li><a href="global.html#item_value">item_value</a></li><li><a href="global.html#loot">loot</a></li><li><a href="global.html#pm">pm</a></li><li><a href="global.html#say">say</a></li><li><a href="global.html#sell">sell</a></li><li><a href="global.html#send_gold">send_gold</a></li><li><a href="global.html#send_item">send_item</a></li><li><a href="global.html#send_party_invite">send_party_invite</a></li><li><a href="global.html#set_message">set_message</a></li><li><a href="global.html#shift">shift</a></li><li><a href="global.html#show_json">show_json</a></li><li><a href="global.html#trade">trade</a></li><li><a href="global.html#trade_buy">trade_buy</a></li><li><a href="global.html#upgrade">upgrade</a></li><li><a href="global.html#use">use</a></li><li><a href="global.html#use_skill">use_skill</a></li></ul>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="Character.html">Character</a></li><li><a href="Monster.html">Monster</a></li><li><a href="PIXI.Sprite.html">Sprite</a></li><li><a href="Player.html">Player</a></li></ul><h3>Global</h3><ul><li><a href="global.html#accept_party_invite">accept_party_invite</a></li><li><a href="global.html#accept_party_request">accept_party_request</a></li><li><a href="global.html#activate">activate</a></li><li><a href="global.html#add_bottom_button">add_bottom_button</a></li><li><a href="global.html#add_top_button">add_top_button</a></li><li><a href="global.html#attack">attack</a></li><li><a href="global.html#auto_reload">auto_reload</a></li><li><a href="global.html#bank_deposit">bank_deposit</a></li><li><a href="global.html#bank_store">bank_store</a></li><li><a href="global.html#bank_withdraw">bank_withdraw</a></li><li><a href="global.html#buy">buy</a></li><li><a href="global.html#buy_with_gold">buy_with_gold</a></li><li><a href="global.html#buy_with_shells">buy_with_shells</a></li><li><a href="global.html#can_attack">can_attack</a></li><li><a href="global.html#can_heal">can_heal</a></li><li><a href="global.html#can_move_to">can_move_to</a></li><li><a href="global.html#can_use">can_use</a></li><li><a href="global.html#change_target">change_target</a></li><li><a href="global.html#clear_buttons">clear_buttons</a></li><li><a href="global.html#clear_drawings">clear_drawings</a></li><li><a href="global.html#command_character">command_character</a></li><li><a href="global.html#compound">compound</a></li><li><a href="global.html#continue_pathfinding">continue_pathfinding</a></li><li><a href="global.html#destroy_item">destroy_item</a></li><li><a href="global.html#draw_circle">draw_circle</a></li><li><a href="global.html#draw_line">draw_line</a></li><li><a href="global.html#equip">equip</a></li><li><a href="global.html#exchange">exchange</a></li><li><a href="global.html#game_log">game_log</a></li><li><a href="global.html#get_active_characters">get_active_characters</a></li><li><a href="global.html#get_map">get_map</a></li><li><a href="global.html#get_nearest_hostile">get_nearest_hostile</a></li><li><a href="global.html#get_nearest_monster">get_nearest_monster</a></li><li><a href="global.html#get_player">get_player</a></li><li><a href="global.html#get_socket">get_socket</a></li><li><a href="global.html#get_target">get_target</a></li><li><a href="global.html#get_target_of">get_target_of</a></li><li><a href="global.html#get_targeted_monster">get_targeted_monster</a></li><li><a href="global.html#handle_command">handle_command</a></li><li><a href="global.html#handle_death">handle_death</a></li><li><a href="global.html#heal">heal</a></li><li><a href="global.html#in_attack_range">in_attack_range</a></li><li><a href="global.html#is_character">is_character</a></li><li><a href="global.html#is_monster">is_monster</a></li><li><a href="global.html#is_moving">is_moving</a></li><li><a href="global.html#is_npc">is_npc</a></li><li><a href="global.html#is_player">is_player</a></li><li><a href="global.html#is_pvp">is_pvp</a></li><li><a href="global.html#is_transporting">is_transporting</a></li><li><a href="global.html#item_grade">item_grade</a></li><li><a href="global.html#item_properties">item_properties</a></li><li><a href="global.html#item_value">item_value</a></li><li><a href="global.html#load_code">load_code</a></li><li><a href="global.html#loot">loot</a></li><li><a href="global.html#map_key">map_key</a></li><li><a href="global.html#on_cm">on_cm</a></li><li><a href="global.html#on_combined_damage">on_combined_damage</a></li><li><a href="global.html#on_destroy">on_destroy</a></li><li><a href="global.html#on_disappear">on_disappear</a></li><li><a href="global.html#on_draw">on_draw</a></li><li><a href="global.html#on_party_invite">on_party_invite</a></li><li><a href="global.html#on_party_request">on_party_request</a></li><li><a href="global.html#pget">pget</a></li><li><a href="global.html#plot">plot</a></li><li><a href="global.html#pm">pm</a></li><li><a href="global.html#preview_item">preview_item</a></li><li><a href="global.html#pset">pset</a></li><li><a href="global.html#qpush">qpush</a></li><li><a href="global.html#quantity">quantity</a></li><li><a href="global.html#reset_mappings">reset_mappings</a></li><li><a href="global.html#respawn">respawn</a></li><li><a href="global.html#say">say</a></li><li><a href="global.html#sell">sell</a></li><li><a href="global.html#send_cm">send_cm</a></li><li><a href="global.html#send_gold">send_gold</a></li><li><a href="global.html#send_item">send_item</a></li><li><a href="global.html#send_party_invite">send_party_invite</a></li><li><a href="global.html#send_party_request">send_party_request</a></li><li><a href="global.html#set_button_color">set_button_color</a></li><li><a href="global.html#set_button_onclick">set_button_onclick</a></li><li><a href="global.html#set_button_value">set_button_value</a></li><li><a href="global.html#set_keymap">set_keymap</a></li><li><a href="global.html#set_message">set_message</a></li><li><a href="global.html#set_skillbar">set_skillbar</a></li><li><a href="global.html#shift">shift</a></li><li><a href="global.html#show_json">show_json</a></li><li><a href="global.html#smart_move">smart_move</a></li><li><a href="global.html#smart_move_logic">smart_move_logic</a></li><li><a href="global.html#smooth_path">smooth_path</a></li><li><a href="global.html#start_character">start_character</a></li><li><a href="global.html#start_pathfinding">start_pathfinding</a></li><li><a href="global.html#stop">stop</a></li><li><a href="global.html#stop_character">stop_character</a></li><li><a href="global.html#swap">swap</a></li><li><a href="global.html#trade">trade</a></li><li><a href="global.html#trade_buy">trade_buy</a></li><li><a href="global.html#trigger_event">trigger_event</a></li><li><a href="global.html#unequip">unequip</a></li><li><a href="global.html#unmap_key">unmap_key</a></li><li><a href="global.html#upgrade">upgrade</a></li><li><a href="global.html#use">use</a></li><li><a href="global.html#use_skill">use_skill</a></li></ul>
 </nav>
 
 <br class="clear">
 
 <footer>
-    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Tue Jan 29 2019 09:52:54 GMT+0100 (GMT+01:00)
+    Documentation generated by <a href="https://github.com/jsdoc3/jsdoc">JSDoc 3.5.5</a> on Sun Feb 24 2019 14:41:00 GMT-0500 (STD)
 </footer>
 
 <script> prettyPrint(); </script>
