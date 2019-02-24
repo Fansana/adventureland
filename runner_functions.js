@@ -55,7 +55,7 @@ function stop_character(name) {
     parent.stop_character_runner(name)
 }
 /**
- * Commands the character in [CODE] mode (doesn't work in Steam client).
+ * Commands the character in [CODE] mode (doesn't work with multiple windows).
  * @param {string} name         - The name of the character to command.
  * @param {string} code_snippet - The code to run.
  * @example
