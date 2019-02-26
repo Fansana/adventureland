@@ -32,6 +32,9 @@ server = {
     region: parent.server_region, // "EU", "US", "ASIA"
     id: parent.server_identifier, // "I", "II", "PVP", "TEST"
 }
+/**
+ * @namespace game
+ */
 game = {
     platform: parent.is_electron && "electron" || "web", // "electron" for Steam, Mac clients, "web" for https://adventure.land
     graphics: !parent.no_graphics, // if game.graphics is false, don't draw stuff to the game in your Code
@@ -76,7 +79,7 @@ function get_active_characters() {
 }
 /**
  * Checks if you're in a PVP zone.
- * @return {boolean} Returns true if you're in a PVP zone.
+ * @return {boolean} True if you're in a PVP zone.
  */
 function is_pvp() {
     return G.maps[character.map].pvp || server.is_pvp;
@@ -84,7 +87,7 @@ function is_pvp() {
 /**
  * Checks if the Entity if is an NPC or not.
  * @param {Entity} entity - The entity to check.
- * @return {boolean}        Returns true if the Entity is an NPC.
+ * @return {boolean}        True if the Entity is an NPC.
  */
 function is_npc(entity) {
     if (entity && (entity.npc || entity.type == "npc")) return true;
@@ -92,7 +95,7 @@ function is_npc(entity) {
 /**
  * Checks if the Entity if is a monster or not.
  * @param {Entity} entity - The entity to check.
- * @return {boolean}        Returns true if the Entity is a monster.
+ * @return {boolean}        True if the Entity is a monster.
  */
 function is_monster(entity) {
     if (entity && entity.type == "monster") return true;
@@ -100,7 +103,7 @@ function is_monster(entity) {
 /**
  * Checks if the Entity if is a character or not.
  * @param {Entity} entity - The entity to check.
- * @return {boolean}        Returns true if the Entity is a character.
+ * @return {boolean}        True if the Entity is a character.
  */
 function is_character(entity) {
     if (entity && entity.type == "character" && !entity.npc) return true;
@@ -108,7 +111,7 @@ function is_character(entity) {
 /**
  * Same as is_character.
  * @param {Entity} e - The entity to check.
- * @return {boolean}   Returns true if the Entity is a character.
+ * @return {boolean}   True if the Entity is a character.
  */
 function is_player(e) {
     return is_character(e);
@@ -236,7 +239,7 @@ function swap(a, b) // inventory move/swap
     parent.socket.emit("imove", {a: a, b: b});
 }
 /**
- * Returns the quantity of items named "name" in the inventory.
+ * The quantity of items named "name" in the inventory.
  * @param {string} name - The name of the item to count.
  * @returns {number}    - The number of times the item name was found in the inventory.
  */
@@ -258,7 +261,7 @@ function item_properties(item) // example: item_properties(character.items[0])
     return calculate_item_properties(G.items[item.name], item);
 }
 /**
- *  Returns the item Grade in Number format.
+ *  The item Grade in Number format.
  *  -1: Invalid Input
  *  0 : Normal
  *  1 : High
@@ -352,17 +355,17 @@ function get_target_of(entity) // .target is a Name for Monsters and `id` for Pl
     return null;
 }
 /**
- * Returns the current target Entity of the character without checks
- * @returns {Monster|Player|null} - Returns the current target Entity of the character
+ * The current target Entity of the character without checks
+ * @returns {Monster|Player|null} - The current target Entity of the character
  */
 function get_target() {
     if (parent.ctarget && !parent.ctarget.dead) return parent.ctarget;
     return null;
 }
 /**
- * Returns the current target Entity of the character but with additional checks.
+ * The current target Entity of the character but with additional checks.
  * This prevents the targeting of already dead targets or players
- * @returns {Monster|null} - Returns the current target Entity of the character
+ * @returns {Monster|null} - The current target Entity of the character
  */
 function get_targeted_monster() {
     if (parent.ctarget && !parent.ctarget.dead && parent.ctarget.type == 'monster') return parent.ctarget;
@@ -522,8 +525,11 @@ function sell(num, quantity) //sell an item from character.items by it's order -
 }
 /**
  * Equips the Item in the num-th inventory Slot starting from 0.
- * @param {number} num - The slot the items is currently in
- * @param {number} [slot] Optional  the slot in which to put the item
+ * @param {number} num              - The slot the items is currently in
+ * @param {number} [slot] Optional  - The slot in which to put the item
+ * @example
+ * equip(1);
+ * equip(0, "mainhand"); // show_json(character.slots) => to see slot options
  */
 function equip(num, slot) // slot is optional
 {
@@ -531,7 +537,7 @@ function equip(num, slot) // slot is optional
 }
 /**
  * Unequips the Item in the specified character slot.
- * @param {string} [slot] Optional  the slot in which to put the item
+ * @param {string} slot - the slot in which to remove the item
  * @example
  * unequip("mainhand"); // show_json(character.slots) => to see slot options
  */
@@ -541,9 +547,10 @@ function unequip(slot) // show_json(character.slots) => to see slot options
 }
 /**
  * Puts an item up for sale
- * @param {number} num      - The slot the item is in
- * @param {number} trade_slot   - The slot in the trade window where is should appear
- * @param {number} price    - The price of the item
+ * @param {number} num        - The slot the item is in
+ * @param {number} trade_slot - The slot in the trade window where is should appear
+ * @param {number} price      - The price of the item
+ * @param {number=} quantity  - The amount of items
  */
 function trade(num, trade_slot, price, quantity) // where trade_slot is 1 to 16 - example, trade(0,4,1000) puts the first item in inventory to the 4th trade slot for 1000 gold [27/10/16]
 {
@@ -551,9 +558,9 @@ function trade(num, trade_slot, price, quantity) // where trade_slot is 1 to 16 
     parent.trade(trade_slot, num, price, quantity || 1);
 }
 /**
- *
- * @param {Player} target     - The player entity you want to buy from.
- * @param {number} trade_slot - The trade slot in which the item is you want to buy.
+ * Buys an item from a player's shop.
+ * @param {Player} target     - The player entity you want to buy from
+ * @param {number} trade_slot - The trade slot in which the item is you want to buy
  */
 function trade_buy(target, trade_slot) // target needs to be an actual player
 {
@@ -561,7 +568,7 @@ function trade_buy(target, trade_slot) // target needs to be an actual player
 }
 /**
  * Uses the upgrade npc to upgrade items.
- * @param {number} item_num - Slot number of the item you want to upgrade.
+ * @param {number} item_num - Slot number of the item you want to upgrade
  * @param {number} scroll_num - Slot number of the scroll you want to upgrade
  * @param {number} [offering_num] - Slot number of the offering you want to use
  */
@@ -640,11 +647,11 @@ function show_json(e) // renders the object as json inside the game
     parent.show_json(parent.game_stringify(e, 2));
 }
 /**
- * Returns the entity of a player, only works when the player is visible.
+ * The entity of a player, only works when the player is visible.
  * @param {String} name - The name of the character
- * @returns {Player} - Returns the Player Object
+ * @returns {Player} - The Player Object
  */
-function get_player(name) // returns the player by name, if the player is within the vision area
+function get_player(name) // The player by name, if the player is within the vision area
 {
     var target = null, entities = parent.entities;
     if (name == character.name) target = character;
@@ -688,7 +695,7 @@ function get_nearest_monster(args) {
     return target;
 }
 /**
- * Get nearest Hostile. This function is manly for finding hostile players in your proximity
+ * Get nearest Hostile. This function is mainly for finding hostile players in your proximity
  * @param {Object} args
  * @param {Array.<string>} [args.exclude] An array of Player names which will not be considered hostile
  * @param {boolean} [args.friendship=true] Should friends be considered friendly
@@ -711,6 +718,9 @@ function get_nearest_hostile(args) // mainly as an example [08/02/17]
     }
     return target;
 }
+/**
+ * If low, regenerates MP or HP, using potions if available.
+ */
 function use_hp_or_mp() {
     if (safeties && mssince(last_potion) < 600) return;
     var used = false;
@@ -802,6 +812,10 @@ function accept_party_invite(name) {
 function accept_party_request(name) {
     parent.socket.emit('party', {event: 'raccept', name: name});
 }
+/**
+ * Unfriends a player.
+ * @param {string} name - The name of a character or owner ID of the player to unfriend.
+ */
 function unfriend(name) // instead of a name, an owner id also works, this is currently the only way to unfriend someone [20/08/18]
 {
     parent.socket.emit('friend', {event: 'unfriend', name: name});
@@ -815,10 +829,11 @@ function respawn() {
 /**
  * When a character dies, character.rip is true, you can override handle_death and manually respawn
  * IDEA: A Resident PVP-Dweller, with an evasive Code + irregular respawning
- * respawn current has a 12 second cooldown, best wait 15 seconds before respawning [24/11/16]
- * setTimeout(respawn,15000);
- * return true;
- * NOTE: Add `if(character.rip) {respawn(); return;}` to your main loop/interval too, just in case * @global
+ * NOTE: Add `if(character.rip) {respawn(); return;}` to your main loop/interval too, just in case * @example
+ * function handle_death() {
+ *   setTimeout(respawn,15000); // respawn current has a 12 second cooldown, best wait 15 seconds before respawning [24/11/16]
+ *   return true;
+ * }
  */
 function handle_death() {
     // When a character dies, character.rip is true, you can override handle_death and manually respawn
@@ -902,7 +917,7 @@ function on_destroy() // called just before the CODE is destroyed
     clear_buttons();
 }
 /**
- * The game calls this function at the best place in each game draw frame, so if you are playing the game at 60fps, this function gets called 60 times per second * @global
+ * The game calls this function at the best place in each game draw frame, so if you are playing the game at 60fps, this function gets called 60 times per second. * @global
  */
 function on_draw() // the game calls this function at the best place in each game draw frame, so if you are playing the game at 60fps, this function gets called 60 times per second
 {
@@ -912,6 +927,15 @@ function on_draw() // the game calls this function at the best place in each gam
  * @callback
  * @param event {Object}
  * @param event.name {string} name of the event e.g. pinkgoo or goblin.
+ * @example
+ * function on_game_event(event) {
+ *     if (event.name == "pinkgoo") {
+ *         // start searching for the "Love Goo" of the Valentine's Day event
+ *     }
+ *     if (event.name == "goblin") {
+ *         // start searching for the "Sneaky Goblin"
+ *     }
+ * }
  */
 function on_game_event(event) {
     if (event.name == "pinkgoo") {
@@ -985,9 +1009,9 @@ function clear_drawings() {
 }
 /**
  * Adds a button to the top bar. * @global
- * @param {string} id - the id of the new button.
- * @param {string=} value - the text to display.
- * @param {function=} fn - the function to run.
+ * @param {string} id - the id of the new button
+ * @param {string=} value - the text to display
+ * @param {function=} fn - the function to run when clicked
  */
 function add_top_button(id, value, fn) {
     if (!buttons[id]) {
@@ -1002,9 +1026,9 @@ function add_top_button(id, value, fn) {
 }
 /**
  * Adds a button to the bottom bar. * @global
- * @param {string} id - the id of the new button.
- * @param {string=} value - the text to display.
- * @param {function=} fn - the function to run.
+ * @param {string} id - the id of the new button
+ * @param {string=} value - the text to display
+ * @param {function=} fn - the function to run when clicked
  */
 function add_bottom_button(id, value, fn) {
     if (!buttons[id]) {
@@ -1019,27 +1043,27 @@ function add_bottom_button(id, value, fn) {
 }
 /**
  * Sets the displayed text of a button. * @global
- * @param {string} id - the button to modify.
- * @param {string} value - the text to display.
+ * @param {string} id - the button to modify
+ * @param {string} value - the text to display
  */
 function set_button_value(id, value) {
     parent.$(".codebutton" + id).html(value);
 }
 /**
  * Sets a function to run when clicked. * @global
- * @param {string} id - the button to modify.
- * @param {string} color - the colour to set the button to.
+ * @param {string} id - the button to modify
+ * @param {string} color - the colour to set the button to
  * @example
  *
- * set_button_color("myButton", "#FFFFFF"); // sets myButton to white.
+ * set_button_color("myButton", "#FFFFFF"); // sets myButton to white
  */
 function set_button_color(id, color) {
     parent.$(".codebutton" + id).css("border-color", color);
 }
 /**
  * Sets a function to run when clicked. * @global
- * @param {string} id - the button to modify.
- * @param {function} fn - the function to run.
+ * @param {string} id - the button to modify
+ * @param {function} fn - the function to run
  */
 function set_button_onclick(id, fn) {
     buttons[id].fn = fn;
@@ -1054,7 +1078,7 @@ function clear_buttons() {
 }
 /**
  * Configures the game to auto reload in case you disconnect due to rare network issues. (FIXME: Document differences of "on" and "auto") * @global
- * @param {string} value - valid values are "on", "off", and "auto".
+ * @param {string} value - valid values are "on", "off", and "auto"
  */
 function auto_reload(value) {
     // Configures the game to auto reload in case you disconnect due to rare network issues
@@ -1063,21 +1087,50 @@ function auto_reload(value) {
     else parent.auto_reload = "on"; // always reload
 }
 game.listeners = [];
+/**
+ * Adds a listener that's called whenever the client recieves an event of any kind.
+ * @alias game.all
+ * @memberof game
+ * @param {function} f - A function that's called whenever an event is recieved.
+ * @return {string} The resulting ID of the listener.
+ */
 game.all = function (f) {
     var def = {f: f, id: randomStr(30), event: "all"};
     game.listeners.push(def);
     return def.id;
 };
+/**
+ * Adds a listener that's called whenever the client recieves a specific event.
+ * @alias game.on
+ * @memberof game
+ * @param {string} event - The event that should trigger the function.
+ * @param {function} f   - A function that's called whenever the specified event is recieved.
+ * @return {string} The resulting ID of the listener.
+ */
 game.on = function (event, f) {
     var def = {f: f, id: randomStr(30), event: event};
     game.listeners.push(def);
     return def.id;
 };
+/**
+ * Adds a listener that's called just once whenever the client recieves a specific event.
+ * @alias game.once
+ * @memberof game
+ * @param {string} event - The event that should trigger the function.
+ * @param {function} f   - A function that's called whenever the specified event is recieved.
+ * @return {string} The resulting ID of the listener.
+ */
 game.once = function (event, f) {
     var def = {f: f, id: randomStr(30), event: event, once: true};
     game.listeners.push(def);
     return def.id;
 };
+/**
+ * Removes a listener from the listeners array.
+ * @alias game.remove
+ * @memberof game
+ * @param {string} id - The ID of the listener to remove.
+ */
 game.remove = function (id) {
     for (var i = 0; i < game.listeners.length; i++) {
         if (game.listeners[i].id == id) {
@@ -1086,6 +1139,13 @@ game.remove = function (id) {
         }
     }
 };
+/**
+ * Triggers a specified event, triggering any related listeners.
+ * @alias game.trigger
+ * @memberof game
+ * @param {string} event - The event to trigger.
+ * @param {...*} args    - The arguments to pass to the related listeners.
+ */
 game.trigger = function (event, args) {
     var to_delete = [];
     for (var i = 0; i < game.listeners.length; i++) {
