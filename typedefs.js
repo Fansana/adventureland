@@ -168,10 +168,14 @@
  * @property {boolean} dead              - is the monster dead
  * @property {Date} died                 - when did the Monster die
  * @property {number} attack             - the Average attack damage the monster does
- * @property {number} speed              - the Normal walking speed of the monster. After aggroing
+ * @property {number} speed              - the Normal walking speed of the monster. After aggroing the monster moves at charge speed
+ * @property {number} charge             - the walking speed of the monster while it has an enemy targeted.
  * @property {string} type               - the type of the Entity, for monsters this is always "monster"
  * @property {ChannelingConditions} c    - channelling conditions
  * @property {StatusConditions} s        - status conditions
+ * @property {number} rage               - the probability that a monster which is facing you, targets you
+ * @property {number} aggro              - the probability that a monster which is facing you, hits you (one-shot)
+ * @property {number} aa                 - "always active/moving": whether animations should continue you when a monster isn't moving
  *
  */
 
